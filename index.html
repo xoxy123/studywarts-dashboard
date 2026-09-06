@@ -1,0 +1,1429 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Studywarts Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
+
+<style>
+  /* Tokens. The bare :root carries the complete light palette; the two
+     blocks below redefine only tokens, so an un-stamped document still
+     resolves a full set. The lime and the coral are the app's own
+     --team-accent and --team-danger; on a light ground the lime is
+     unreadable, so it darkens to olive there and keeps its role. */
+  :root {
+    --ground: #f5f7f2;
+    --surface: #ffffff;
+    --surface-2: #eef1ea;
+    --line: #dde2d6;
+    --line-soft: #e8ece3;
+    --text: #141813;
+    --muted: #5d665a;
+    --accent: #3f6d12;
+    --accent-soft: #e6f2d2;
+    --accent-ink: #ffffff;
+    --fixed: #c0392b;
+    --fixed-soft: #fbe9e6;
+    --warn: #a56a00;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", "Cascadia Code", Consolas, monospace;
+    --radius: 4px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0c0f0e;
+      --surface: #121614;
+      --surface-2: #181d1a;
+      --line: #262d28;
+      --line-soft: #1b211d;
+      --text: #eef2ec;
+      --muted: #8a938c;
+      --accent: #b6f36b;
+      --accent-soft: #22331a;
+      --accent-ink: #0c0f0e;
+      --fixed: #ff6b57;
+      --fixed-soft: #2a1512;
+      --warn: #f6b84a;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0c0f0e;
+    --surface: #121614;
+    --surface-2: #181d1a;
+    --line: #262d28;
+    --line-soft: #1b211d;
+    --text: #eef2ec;
+    --muted: #8a938c;
+    --accent: #b6f36b;
+    --accent-soft: #22331a;
+    --accent-ink: #0c0f0e;
+    --fixed: #ff6b57;
+    --fixed-soft: #2a1512;
+    --warn: #f6b84a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px 96px; }
+
+  /* ---------- header ---------- */
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--ground) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .head-in {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 16px 20px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px 16px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 1.22rem;
+    font-weight: 700;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+  .sub {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .head-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+  .who {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 6px 4px 11px;
+    background: var(--surface);
+    font-size: 0.76rem;
+  }
+  .who input {
+    width: 8ch;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-weight: 600;
+  }
+  .who input:focus { outline: none; }
+  .who span { color: var(--muted); font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .link-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--muted); }
+  .link-state[data-live="true"] .dot { background: var(--accent); }
+  .link-state[data-live="false"] .dot { background: var(--fixed); }
+
+  /* ---------- tabs ---------- */
+
+  nav {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 12px 20px 0;
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+  }
+  nav button {
+    position: relative;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    padding: 9px 14px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  nav button:hover { color: var(--text); }
+  nav button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+  nav button b {
+    margin-left: 7px;
+    border-radius: 999px;
+    padding: 1px 6px;
+    background: var(--surface-2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    font-weight: 500;
+  }
+  nav button[aria-selected="true"] b { background: var(--accent-soft); color: var(--accent); }
+
+  /* ---------- shared ---------- */
+
+  section[hidden] { display: none; }
+  .panel { padding-top: 22px; display: grid; gap: 16px; }
+
+  .card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .card > h2 {
+    margin: 0;
+    border-bottom: 1px solid var(--line-soft);
+    padding: 13px 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .card-body { padding: 16px; display: grid; gap: 12px; }
+
+  label.field { display: grid; gap: 5px; }
+  label.field > span {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  /* Every text-like control, not a hand-listed few: the sign-in gate adds
+     email and password, and a type left off this list renders as a white
+     box with black text on the dark ground. */
+  input[type="text"], input[type="number"], input[type="date"],
+  input[type="email"], input[type="password"], input[type="search"],
+  textarea, select {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 9px 11px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 0.88rem;
+  }
+  textarea { resize: vertical; line-height: 1.55; }
+  input:focus-visible, textarea:focus-visible, select:focus-visible,
+  button:focus-visible, .row-hit:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    background: var(--surface-2);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.83rem;
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn[data-primary] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+  .btn[disabled] { opacity: 0.45; cursor: default; }
+  .btn[disabled]:hover { border-color: var(--line); }
+  .btn-ghost {
+    border: 0;
+    padding: 5px 8px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.74rem;
+    cursor: pointer;
+  }
+  .btn-ghost:hover { color: var(--fixed); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 11px;
+    background: var(--surface-2);
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.76rem;
+    cursor: pointer;
+  }
+  .chip:hover { color: var(--text); border-color: var(--muted); }
+  .chip[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+  .chip small { font-family: var(--mono); opacity: 0.75; }
+
+  .empty {
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+    padding: 34px 16px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .empty strong { color: var(--text); font-size: 0.92rem; }
+  .empty span { font-size: 0.82rem; max-width: 42ch; }
+
+  .thumbs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .thumbs a, .thumbs button.thumb {
+    display: block;
+    overflow: hidden;
+    width: 62px;
+    height: 62px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0;
+    background: var(--surface-2);
+    cursor: pointer;
+  }
+  .thumbs img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .thumb-x {
+    position: relative;
+    display: inline-block;
+  }
+  .thumb-x button {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    border: 0;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.68);
+    color: #fff;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .attach {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 7px 12px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+  .attach:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ---------- feedback ---------- */
+
+  .fb-list { display: grid; }
+  .fb {
+    display: grid;
+    grid-template-columns: 3px 1fr auto;
+    align-items: start;
+    gap: 0 14px;
+    border-top: 1px solid var(--line-soft);
+    padding: 0;
+  }
+  .fb:first-child { border-top: 0; }
+  .fb i.stripe { display: block; align-self: stretch; background: transparent; }
+  .fb[data-fixed="true"] i.stripe { background: var(--fixed); }
+  .fb[data-fixed="true"] { background: var(--fixed-soft); }
+
+  .row-hit {
+    display: grid;
+    gap: 5px;
+    border: 0;
+    padding: 14px 0 14px 12px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .fb-title { font-size: 0.95rem; font-weight: 600; text-wrap: balance; }
+  .fb[data-fixed="true"] .fb-title { color: var(--fixed); text-decoration: line-through; }
+  .fb-detail { margin: 0; color: var(--muted); font-size: 0.85rem; }
+  .fb-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.63rem;
+  }
+  .tag {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 1px 8px;
+    background: var(--surface-2);
+    color: var(--text);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .fb-side { display: flex; align-items: center; gap: 4px; padding: 12px 12px 0 0; }
+
+  /* ---------- budget ---------- */
+
+  .meter-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .big {
+    font-family: var(--mono);
+    font-size: 1.7rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .meter {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .meter div { height: 100%; background: var(--accent); }
+  .meter[data-over="true"] div { background: var(--fixed); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .scroll-x { overflow-x: auto; }
+  th {
+    border-bottom: 1px solid var(--line);
+    padding: 8px 10px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  td { border-bottom: 1px solid var(--line-soft); padding: 9px 10px; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  td.num[data-kind="income"] { color: var(--accent); }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+
+  /* ---------- video ---------- */
+
+  .vid {
+    display: grid;
+    gap: 8px;
+    border-top: 1px solid var(--line-soft);
+    padding: 14px 16px;
+  }
+  .vid:first-child { border-top: 0; }
+  .vid-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .vid-title { flex: 1 1 220px; border: 0; padding: 0; background: transparent; color: inherit; font: inherit; font-size: 0.95rem; font-weight: 600; text-align: left; cursor: pointer; }
+  .vid-title:hover { color: var(--accent); }
+  .stage {
+    display: inline-flex;
+    gap: 3px;
+  }
+  .stage i {
+    width: 16px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--surface-2);
+  }
+  .stage i[data-on="true"] { background: var(--accent); }
+  .vid-meta { color: var(--muted); font-family: var(--mono); font-size: 0.63rem; }
+
+  /* ---------- goals ---------- */
+
+  .goal { display: grid; gap: 8px; border-top: 1px solid var(--line-soft); padding: 14px 16px; }
+  .goal:first-child { border-top: 0; }
+  .goal-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+  .goal-name { font-size: 0.95rem; font-weight: 600; }
+  .goal-num { margin-left: auto; font-family: var(--mono); font-size: 0.8rem; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .goal[data-done="true"] .goal-name { color: var(--accent); }
+
+  /* ---------- modal ---------- */
+
+  dialog {
+    width: min(760px, calc(100vw - 32px));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0;
+    background: var(--surface);
+    color: var(--text);
+  }
+  dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+  .modal-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--line-soft);
+    padding: 13px 16px;
+  }
+  .modal-head strong { flex: 1; font-size: 0.95rem; }
+  .modal-body { padding: 16px; display: grid; gap: 12px; max-height: 70vh; overflow-y: auto; }
+  .modal-foot { display: flex; gap: 8px; border-top: 1px solid var(--line-soft); padding: 12px 16px; }
+  .script-area { min-height: 260px; font-family: var(--mono); font-size: 0.82rem; white-space: pre-wrap; }
+
+  .notice {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    background: var(--surface);
+    font-size: 0.86rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  /* ---------- sign-in gate ---------- */
+
+  .gate {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    overflow-y: auto;
+    padding: 24px;
+    background: var(--ground);
+  }
+  .gate[hidden] { display: none; }
+  .gate-card {
+    display: grid;
+    gap: 12px;
+    width: min(380px, 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 26px;
+    background: var(--surface);
+  }
+  .gate-card h1 { font-size: 1.15rem; }
+  .gate-card p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+  .gate-actions { display: flex; gap: 8px; }
+  .gate-actions .btn { flex: 1; }
+  .gate-msg:empty { display: none; }
+  .gate-msg { color: var(--fixed); font-size: 0.82rem; }
+  .gate-msg[data-ok="true"] { color: var(--accent); }
+</style>
+
+</head>
+<body>
+
+<div id="gate" class="gate">
+  <form class="gate-card" id="gate-form">
+    <h1>Studywarts Dashboard</h1>
+    <p>Feedback, budget, manus och mål — delat mellan er två.</p>
+    <label class="field"><span>Mejl</span><input type="email" id="g-mail" autocomplete="email" required></label>
+    <label class="field"><span>Lösenord</span><input type="password" id="g-pass" autocomplete="current-password" minlength="6" required></label>
+    <div class="gate-actions">
+      <button class="btn" data-primary type="submit" id="g-in">Logga in</button>
+      <button class="btn" type="button" id="g-up">Skapa konto</button>
+    </div>
+    <p class="gate-msg" id="g-msg"></p>
+  </form>
+</div>
+
+<header>
+  <div class="head-in">
+    <h1>Studywarts Dashboard</h1>
+    <span class="sub">Wille &amp; kompis</span>
+    <div class="head-right">
+      <span class="link-state" id="link" data-live="pending"><i class="dot"></i><span id="link-text">Kopplar upp</span></span>
+      <label class="who"><span>Du</span><input id="who" maxlength="12" placeholder="namn"></label>
+      <button class="btn-ghost" id="signout" type="button">Logga ut</button>
+    </div>
+  </div>
+  <nav id="tabs" role="tablist"></nav>
+</header>
+
+<main class="wrap">
+  <div id="offline" class="notice" hidden>
+    Sidan når inte den delade databasen just nu, så inget du skriver sparas. Ladda om sidan; håller det i sig är
+    delningen eller åtkomsten ändrad.
+  </div>
+
+  <!-- FEEDBACK -->
+  <section id="p-feedback" class="panel" role="tabpanel" aria-label="Feedback">
+    <div class="card">
+      <h2>Ny feedback</h2>
+      <div class="card-body">
+        <label class="field"><span>Vad ska fixas</span>
+          <input type="text" id="fb-title" maxlength="180" placeholder="Kort och konkret">
+        </label>
+        <label class="field"><span>Detaljer</span>
+          <textarea id="fb-detail" rows="2" placeholder="Vad händer, och vad borde hända istället"></textarea>
+        </label>
+        <div>
+          <div class="field"><span style="display:block;margin-bottom:6px">Vilken del av appen — valfritt</span>
+            <div class="chips" id="fb-sections"></div>
+          </div>
+        </div>
+        <div class="thumbs" id="fb-draft-thumbs"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="attach" id="fb-attach" type="button">Bifoga bild — visa vad du menar</button>
+          <button class="btn" data-primary id="fb-add" type="button">Lägg till</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Listan</h2>
+      <div style="padding:12px 16px;border-bottom:1px solid var(--line-soft)">
+        <div class="chips" id="fb-filter"></div>
+      </div>
+      <div class="fb-list" id="fb-list"></div>
+    </div>
+  </section>
+
+  <!-- BUDGET -->
+  <section id="p-budget" class="panel" role="tabpanel" aria-label="Budget" hidden>
+    <div class="card">
+      <h2>Den här månaden</h2>
+      <div class="card-body">
+        <div class="meter-head">
+          <div>
+            <div class="big" id="bud-spent">0 kr</div>
+            <div class="sub" id="bud-of">av 0 kr</div>
+          </div>
+          <label class="field" style="max-width:190px"><span>Månadsbudget</span>
+            <input type="number" id="bud-input" min="0" step="50" placeholder="0">
+          </label>
+        </div>
+        <div class="meter" id="bud-meter"><div style="width:0%"></div></div>
+        <div class="grid-3">
+          <div><div class="sub">Utgifter</div><div class="big" id="sum-out" style="font-size:1.05rem">0 kr</div></div>
+          <div><div class="sub">Intäkter</div><div class="big" id="sum-in" style="font-size:1.05rem">0 kr</div></div>
+          <div><div class="sub">Netto</div><div class="big" id="sum-net" style="font-size:1.05rem">0 kr</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Nytt köp</h2>
+      <div class="card-body">
+        <div class="grid-3">
+          <label class="field"><span>Vad</span><input type="text" id="pu-label" maxlength="120" placeholder="t.ex. Figma"></label>
+          <label class="field"><span>Belopp (kr)</span><input type="number" id="pu-amount" min="0" step="1" placeholder="0"></label>
+          <label class="field"><span>Datum</span><input type="date" id="pu-date"></label>
+          <label class="field"><span>Kategori</span>
+            <select id="pu-cat">
+              <option>Verktyg</option><option>Assets</option><option>Annonser</option>
+              <option>Servrar</option><option>Mat</option><option>Övrigt</option>
+            </select>
+          </label>
+          <label class="field"><span>Typ</span>
+            <select id="pu-kind"><option value="expense">Utgift</option><option value="income">Intäkt</option></select>
+          </label>
+        </div>
+        <div><button class="btn" data-primary id="pu-add" type="button">Lägg till</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Alla poster</h2>
+      <div class="scroll-x"><table id="pu-table"></table></div>
+      <div id="pu-empty"></div>
+    </div>
+  </section>
+
+  <!-- VIDEO -->
+  <section id="p-video" class="panel" role="tabpanel" aria-label="Video" hidden>
+    <div class="card">
+      <h2>Ny video</h2>
+      <div class="card-body">
+        <div class="grid-3">
+          <label class="field"><span>Titel</span><input type="text" id="vd-title" maxlength="180" placeholder="Arbetsnamn"></label>
+          <label class="field"><span>Plattform</span>
+            <select id="vd-platform"><option>TikTok</option><option>Instagram</option><option>YouTube</option><option>Flera</option></select>
+          </label>
+        </div>
+        <div><button class="btn" data-primary id="vd-add" type="button">Lägg till</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Manus</h2>
+      <div id="vd-list"></div>
+    </div>
+  </section>
+
+  <!-- MÅL -->
+  <section id="p-goals" class="panel" role="tabpanel" aria-label="Mål" hidden>
+    <div class="card">
+      <h2>Nytt mål</h2>
+      <div class="card-body">
+        <label class="field"><span>Mål</span>
+          <input type="text" id="gl-title" maxlength="180" placeholder="t.ex. 5000 följare på TikTok, eller: få sidan lanserad">
+        </label>
+        <div class="grid-3">
+          <label class="field"><span>Sort</span>
+            <select id="gl-kind">
+              <option value="number">Ett tal att nå</option>
+              <option value="milestone">Klart eller inte</option>
+            </select>
+          </label>
+          <label class="field" data-only="number"><span>Mätetal</span>
+            <input type="number" id="gl-target" min="1" step="1" placeholder="5000">
+          </label>
+          <label class="field" data-only="number"><span>Enhet</span>
+            <input type="text" id="gl-unit" maxlength="20" placeholder="följare">
+          </label>
+          <label class="field"><span>Senast — valfritt</span><input type="date" id="gl-due"></label>
+        </div>
+        <div><button class="btn" data-primary id="gl-add" type="button">Lägg till</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Mål</h2>
+      <div id="gl-list"></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="modal">
+  <form method="dialog" class="modal-head">
+    <strong id="m-title">Manus</strong>
+    <button class="btn" value="cancel" type="submit">Stäng</button>
+  </form>
+  <div class="modal-body">
+    <label class="field"><span>Hook — första meningen som stoppar scrollen</span>
+      <input type="text" id="m-hook" maxlength="280">
+    </label>
+    <label class="field"><span id="m-count">Manus</span>
+      <textarea id="m-script" class="script-area" placeholder="[0:00 HOOK]&#10;…&#10;&#10;[0:06]&#10;…&#10;&#10;[CTA]&#10;…"></textarea>
+    </label>
+    <div class="grid-3">
+      <label class="field"><span>Status</span><select id="m-status"></select></label>
+      <label class="field"><span>Plattform</span>
+        <select id="m-platform"><option>TikTok</option><option>Instagram</option><option>YouTube</option><option>Flera</option></select>
+      </label>
+    </div>
+    <div class="thumbs" id="m-thumbs"></div>
+    <div><button class="attach" id="m-attach" type="button">Bifoga referensbild</button></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn" data-primary id="m-save" type="button">Spara</button>
+    <button class="btn-ghost" id="m-delete" type="button">Ta bort videon</button>
+  </div>
+</dialog>
+
+<input type="file" id="filepick" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+
+
+<script>
+(() => {
+  "use strict";
+
+  /* The project William owns, and its publishable key. A publishable key is
+     meant to sit in a page — it grants nothing on its own. Every table is
+     behind row-level security that asks whether the caller holds one of the
+     two seats, so a stranger who signs up sees an empty dashboard. */
+  const SUPABASE_URL = "https://natlrlvtbgbyypzworge.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_whUevVxQ4hGWECgprUVgUQ_UPDUvjxc";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  /* The parts of the app a note can be filed against — the labels from the
+     app's own sidebar, so a note names a place both of you recognise.
+     Choosing one is optional. */
+  const SECTIONS = [
+    ["dashboard", "Dashboard"], ["plugga", "Plugga"], ["online", "Online"],
+    ["fokus", "Fokus"], ["motivering", "Motivering"], ["healthy", "Healthy Page"],
+    ["planering", "Planering"], ["handla", "Handla"], ["ryggsack", "Ryggsäck"],
+    ["karaktar", "Karaktär"], ["studiepass", "Studiepass"], ["medlemskap", "Medlemskap"],
+    ["magiska", "Magiska världen"], ["elite", "Elite School"], ["konto", "Konto"],
+    ["landning", "Landningssida"], ["annat", "Annat"],
+  ];
+  const SECTION_LABEL = Object.fromEntries(SECTIONS);
+  const STAGES = ["Idé", "Manus", "Filmas", "Klipps", "Klar", "Publicerad"];
+
+  const $ = (id) => document.getElementById(id);
+  const kr = (n) => new Intl.NumberFormat("sv-SE").format(Math.round(n || 0)) + " kr";
+  const day = (iso) => iso ? new Intl.DateTimeFormat("sv-SE", { day: "numeric", month: "short" }).format(new Date(iso)) : "";
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const today = () => new Date().toISOString().slice(0, 10);
+
+  /* ---------- who am I, locally ---------- */
+  let me = "";
+  try { me = localStorage.getItem("sw-who") || ""; } catch (_) {}
+  $("who").value = me;
+  $("who").addEventListener("input", (e) => {
+    me = e.target.value.trim();
+    try { localStorage.setItem("sw-who", me); } catch (_) {}
+  });
+
+  /* ---------- state ---------- */
+  const state = { feedback: [], purchases: [], videos: [], goals: [], budget: 0 };
+  const images = new Map();
+  const wanted = new Set();
+  let draftImages = [];
+  let filter = "all";
+  let section = "";
+  let pickTarget = null;
+  let openVideo = null;
+  let ready = false;
+
+  const setLink = (live, text) => {
+    $("link").dataset.live = live;
+    $("link-text").textContent = text;
+  };
+
+  /* ---------- row shapes ----------
+     The tables are snake_case; the rendering below reads camelCase. One
+     adapter each way keeps the mapping in a single place instead of spread
+     through every read and write. */
+  const IN = {
+    feedback: (r) => ({ id: r.id, title: r.title, detail: r.detail, section: r.section, status: r.status,
+      author: r.author, fixedBy: r.fixed_by, fixedAt: r.fixed_at, images: r.images || [], createdAt: r.created_at }),
+    purchases: (r) => ({ id: r.id, label: r.label, amount: +r.amount, category: r.category, kind: r.kind,
+      on: r.on_date, author: r.author, createdAt: r.created_at }),
+    videos: (r) => ({ id: r.id, title: r.title, platform: r.platform, status: r.status, hook: r.hook,
+      script: r.script, images: r.images || [], author: r.author, createdAt: r.created_at, updatedAt: r.updated_at }),
+    goals: (r) => ({ id: r.id, title: r.title, kind: r.kind, target: +r.target, current: +r.current,
+      unit: r.unit, done: r.done, due: r.due || "", images: r.images || [], author: r.author, createdAt: r.created_at }),
+  };
+  const TABLE = { feedback: "dash_feedback", purchases: "dash_purchases", videos: "dash_videos", goals: "dash_goals" };
+
+  /* ---------- images ----------
+     One picture per row in its own table, compressed in the browser first.
+     A phone screenshot is three megabytes and nobody needs that here. */
+  async function compress(file) {
+    const bitmap = await createImageBitmap(file);
+    let w = bitmap.width, h = bitmap.height;
+    const max = 1400;
+    if (Math.max(w, h) > max) { const s = max / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    canvas.getContext("2d").drawImage(bitmap, 0, 0, w, h);
+    let q = 0.72, url = canvas.toDataURL("image/jpeg", q);
+    while (url.length > 600000 && q > 0.28) { q -= 0.1; url = canvas.toDataURL("image/jpeg", q); }
+    return url;
+  }
+
+  async function storeImage(file) {
+    const url = await compress(file);
+    const id = uid();
+    images.set(id, url);
+    wanted.add(id);
+    const { error } = await sb.from("dash_images").insert({ id, url, name: file.name || "bild" });
+    if (error) { console.error(error); return null; }
+    return id;
+  }
+
+  async function loadImages(ids) {
+    const missing = ids.filter((id) => !wanted.has(id));
+    if (!missing.length) return;
+    missing.forEach((id) => wanted.add(id));
+    const { data } = await sb.from("dash_images").select("id,url").in("id", missing);
+    (data || []).forEach((row) => images.set(row.id, row.url));
+    if (data && data.length) renderAll();
+  }
+
+  function thumbHtml(ids, removableKind) {
+    if (!ids || !ids.length) return "";
+    loadImages(ids);
+    return '<div class="thumbs">' + ids.map((id) => {
+      const url = images.get(id);
+      const inner = url ? '<img src="' + url + '" alt="Bifogad bild">' : '<span style="display:block;width:100%;height:100%"></span>';
+      if (removableKind) {
+        return '<span class="thumb-x"><span class="thumbs"><button class="thumb" type="button" data-view="' + id + '">' + inner +
+          '</button></span><button type="button" data-drop="' + removableKind + ":" + id + '" aria-label="Ta bort bild">✕</button></span>';
+      }
+      return '<button class="thumb" type="button" data-view="' + id + '">' + inner + "</button>";
+    }).join("") + "</div>";
+  }
+
+  /* ---------- tabs ---------- */
+  const TABS = [["feedback", "Feedback"], ["budget", "Budget"], ["video", "Video & manus"], ["goals", "Mål"]];
+  let tab = "feedback";
+  function renderTabs() {
+    const counts = {
+      feedback: state.feedback.filter((f) => f.status !== "fixed").length,
+      budget: state.purchases.length,
+      video: state.videos.length,
+      goals: state.goals.filter((g) => !goalDone(g)).length,
+    };
+    $("tabs").innerHTML = TABS.map(([id, label]) =>
+      '<button role="tab" data-tab="' + id + '" aria-selected="' + (tab === id) + '">' + label +
+      (counts[id] ? "<b>" + counts[id] + "</b>" : "") + "</button>").join("");
+    TABS.forEach(([id]) => { $("p-" + id).hidden = id !== tab; });
+  }
+  $("tabs").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-tab]");
+    if (!b) return;
+    tab = b.dataset.tab;
+    renderTabs();
+  });
+
+  /* ---------- feedback ---------- */
+  function renderSectionPickers() {
+    $("fb-sections").innerHTML =
+      '<button class="chip" type="button" data-pick="" aria-pressed="' + (section === "") + '">Ingen</button>' +
+      SECTIONS.map(([id, label]) =>
+        '<button class="chip" type="button" data-pick="' + id + '" aria-pressed="' + (section === id) + '">' + label + "</button>").join("");
+
+    const counts = {};
+    state.feedback.forEach((f) => {
+      const s = f.section || "";
+      if (!s) return;
+      counts[s] = counts[s] || { open: 0, all: 0 };
+      counts[s].all++;
+      if (f.status !== "fixed") counts[s].open++;
+    });
+    const used = SECTIONS.filter(([id]) => counts[id]);
+    $("fb-filter").innerHTML =
+      '<button class="chip" type="button" data-filter="all" aria-pressed="' + (filter === "all") + '">Alla <small>' +
+      state.feedback.length + "</small></button>" +
+      used.map(([id, label]) => {
+        const c = counts[id];
+        return '<button class="chip" type="button" data-filter="' + id + '" aria-pressed="' + (filter === id) + '">' +
+          label + " <small>" + (c.open || c.all) + "</small></button>";
+      }).join("");
+  }
+
+  function renderFeedback() {
+    renderSectionPickers();
+    $("fb-draft-thumbs").innerHTML = thumbHtml(draftImages, "draft");
+
+    const rows = state.feedback
+      .filter((f) => filter === "all" || (f.section || "") === filter)
+      .sort((a, b) => {
+        const af = a.status === "fixed", bf = b.status === "fixed";
+        if (af !== bf) return af ? 1 : -1;
+        return (b.createdAt || "").localeCompare(a.createdAt || "");
+      });
+
+    if (!rows.length) {
+      $("fb-list").innerHTML = '<div class="empty"><strong>Inget här än</strong>' +
+        "<span>Skriv vad som ska fixas i rutan ovan. Bifoga gärna en bild som visar vad du menar. " +
+        "Klicka på en rad när den är fixad — då blir den röd.</span></div>";
+      return;
+    }
+
+    $("fb-list").innerHTML = rows.map((f) => {
+      const fixed = f.status === "fixed";
+      const who = fixed ? ("Fixad av " + esc(f.fixedBy || "någon") + " " + day(f.fixedAt))
+                        : ("Skriven av " + esc(f.author || "någon") + " " + day(f.createdAt));
+      return '<article class="fb" data-fixed="' + fixed + '">' +
+        '<i class="stripe"></i>' +
+        '<button class="row-hit" type="button" data-toggle="' + f.id + '" aria-pressed="' + fixed + '">' +
+          '<span class="fb-title">' + esc(f.title) + "</span>" +
+          (f.detail ? '<p class="fb-detail">' + esc(f.detail) + "</p>" : "") +
+          '<span class="fb-meta">' +
+            (f.section ? '<span class="tag">' + esc(SECTION_LABEL[f.section] || f.section) + "</span>" : "") +
+            who + "</span>" +
+        "</button>" +
+        '<span class="fb-side">' + thumbHtml(f.images, null) +
+          '<button class="btn-ghost" type="button" data-del="feedback:' + f.id + '">Ta bort</button></span>' +
+        "</article>";
+    }).join("");
+  }
+
+  /* ---------- budget ---------- */
+  function renderBudget() {
+    const month = new Date().toISOString().slice(0, 7);
+    const inMonth = state.purchases.filter((p) => (p.on || "").slice(0, 7) === month);
+    const out = inMonth.filter((p) => p.kind !== "income").reduce((s, p) => s + (+p.amount || 0), 0);
+    const income = inMonth.filter((p) => p.kind === "income").reduce((s, p) => s + (+p.amount || 0), 0);
+    const budget = +state.budget || 0;
+
+    $("bud-spent").textContent = kr(out);
+    $("bud-of").textContent = budget ? "av " + kr(budget) + " den här månaden" : "ingen budget satt";
+    if (document.activeElement !== $("bud-input")) $("bud-input").value = budget || "";
+    const pct = budget ? Math.min(100, (out / budget) * 100) : 0;
+    $("bud-meter").dataset.over = budget > 0 && out > budget;
+    $("bud-meter").firstElementChild.style.width = pct + "%";
+    $("sum-out").textContent = kr(out);
+    $("sum-in").textContent = kr(income);
+    $("sum-net").textContent = kr(income - out);
+
+    const all = [...state.purchases].sort((a, b) => (b.on || "").localeCompare(a.on || ""));
+    if (!all.length) {
+      $("pu-table").innerHTML = "";
+      $("pu-empty").innerHTML = '<div class="empty"><strong>Inga köp registrerade</strong>' +
+        "<span>Lägg in vad ni köper så räknas månaden ihop av sig själv.</span></div>";
+      return;
+    }
+    $("pu-empty").innerHTML = "";
+    $("pu-table").innerHTML =
+      "<thead><tr><th>Datum</th><th>Vad</th><th>Kategori</th><th>Av</th><th style='text-align:right'>Belopp</th><th></th></tr></thead><tbody>" +
+      all.map((p) => "<tr><td class='num' style='text-align:left'>" + esc(p.on) + "</td><td>" + esc(p.label) +
+        "</td><td>" + esc(p.category || "") + "</td><td>" + esc(p.author || "") +
+        "</td><td class='num' data-kind='" + esc(p.kind) + "'>" + (p.kind === "income" ? "+" : "−") + kr(p.amount) +
+        "</td><td style='text-align:right'><button class='btn-ghost' type='button' data-del='purchases:" + p.id + "'>Ta bort</button></td></tr>").join("") +
+      "</tbody>";
+  }
+
+  /* ---------- video ---------- */
+  const words = (s) => (s || "").trim() ? (s || "").trim().split(/\s+/).length : 0;
+
+  function renderVideos() {
+    const list = [...state.videos].sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+    if (!list.length) {
+      $("vd-list").innerHTML = '<div class="empty"><strong>Inga videor än</strong>' +
+        "<span>Lägg till en titel ovan, öppna den och skriv manuset. Ordräkning och ungefärlig taltid räknas medan du skriver.</span></div>";
+      return;
+    }
+    $("vd-list").innerHTML = list.map((v) => {
+      const w = words(v.script);
+      const stageIndex = Math.max(0, STAGES.indexOf(v.status || "Idé"));
+      return '<article class="vid">' +
+        '<div class="vid-top">' +
+          '<button class="vid-title" type="button" data-open="' + v.id + '">' + esc(v.title) + "</button>" +
+          '<span class="stage" title="' + esc(v.status || "Idé") + '">' +
+            STAGES.map((_, i) => '<i data-on="' + (i <= stageIndex) + '"></i>').join("") + "</span>" +
+        "</div>" +
+        '<div class="vid-meta">' + esc(v.platform || "TikTok") + " · " + esc(v.status || "Idé") + " · " +
+          (w ? w + " ord · ca " + Math.round(w / 2.6) + " s" : "inget manus än") + "</div>" +
+        (v.hook ? '<p class="fb-detail">' + esc(v.hook) + "</p>" : "") +
+        thumbHtml(v.images, null) +
+      "</article>";
+    }).join("");
+  }
+
+  /* ---------- goals ---------- */
+  function goalDone(g) {
+    if (g.kind === "milestone") return !!g.done;
+    return (+g.current || 0) >= (+g.target || 1);
+  }
+
+  function renderGoals() {
+    const list = [...state.goals].sort((a, b) => {
+      const ad = goalDone(a), bd = goalDone(b);
+      if (ad !== bd) return ad ? 1 : -1;
+      const av = a.due || "9999", bv = b.due || "9999";
+      if (av !== bv) return av.localeCompare(bv);
+      return (a.createdAt || "").localeCompare(b.createdAt || "");
+    });
+
+    if (!list.length) {
+      $("gl-list").innerHTML = '<div class="empty"><strong>Inga mål satta</strong>' +
+        "<span>Ett mål är antingen ett tal att nå — följare, kunder, videor — eller något som " +
+        "bara ska bli gjort, som att få sidan lanserad. Båda kan lägga in egna.</span></div>";
+      return;
+    }
+
+    $("gl-list").innerHTML = list.map((g) => {
+      const done = goalDone(g);
+      const late = g.due && !done && g.due < today();
+      const dueLine = g.due
+        ? (late ? '<span style="color:var(--fixed)">Skulle varit klart ' + day(g.due) + "</span>" : "Senast " + day(g.due))
+        : "";
+
+      let body;
+      if (g.kind === "milestone") {
+        body = '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">' +
+          '<button class="btn" ' + (done ? "" : "data-primary ") + 'type="button" data-mark="' + g.id + '">' +
+            (done ? "Klar — ångra" : "Markera klar") + "</button></div>";
+      } else {
+        const target = +g.target || 1, current = +g.current || 0;
+        const pct = Math.max(0, Math.min(100, (current / target) * 100));
+        body = '<div class="meter"><div style="width:' + pct + '%"></div></div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">' +
+            '<button class="btn" type="button" data-step="' + g.id + ':-1">−1</button>' +
+            '<button class="btn" type="button" data-step="' + g.id + ':1">+1</button>' +
+            '<input type="number" style="width:8rem" value="' + current + '" data-set="' + g.id + '" ' +
+              'aria-label="Nuvarande värde för ' + esc(g.title) + '">' +
+          "</div>";
+      }
+
+      const num = g.kind === "milestone"
+        ? (done ? "Klar" : "Inte klar")
+        : ((+g.current || 0) + " / " + (+g.target || 1) + " " + esc(g.unit || "") +
+           " · " + Math.round(Math.min(100, ((+g.current || 0) / (+g.target || 1)) * 100)) + "%");
+
+      return '<article class="goal" data-done="' + done + '">' +
+        '<div class="goal-top"><span class="goal-name">' + esc(g.title) + "</span>" +
+          '<span class="goal-num">' + num + "</span></div>" +
+        body +
+        '<div class="vid-meta">Satt av ' + esc(g.author || "någon") + " " + day(g.createdAt) +
+          (dueLine ? " · " + dueLine : "") + "</div>" +
+        thumbHtml(g.images, null) +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+          '<button class="attach" type="button" data-goalimg="' + g.id + '">Bild</button>' +
+          '<button class="btn-ghost" type="button" data-del="goals:' + g.id + '">Ta bort</button>' +
+        "</div></article>";
+    }).join("");
+  }
+
+  function renderAll() {
+    renderTabs();
+    renderFeedback();
+    renderBudget();
+    renderVideos();
+    renderGoals();
+  }
+
+  /* ---------- reads ---------- */
+  async function loadAll() {
+    const [fb, pu, vd, gl, st] = await Promise.all([
+      sb.from("dash_feedback").select("*"),
+      sb.from("dash_purchases").select("*"),
+      sb.from("dash_videos").select("*"),
+      sb.from("dash_goals").select("*"),
+      sb.from("dash_settings").select("*").eq("key", "budget").maybeSingle(),
+    ]);
+    if (fb.error) { setLink("false", "Läsfel"); console.error(fb.error); return; }
+    state.feedback = (fb.data || []).map(IN.feedback);
+    state.purchases = (pu.data || []).map(IN.purchases);
+    state.videos = (vd.data || []).map(IN.videos);
+    state.goals = (gl.data || []).map(IN.goals);
+    state.budget = st.data ? (st.data.value.monthly || 0) : 0;
+    ready = true;
+    setLink("true", "Delad · live");
+    renderAll();
+  }
+
+  function subscribe() {
+    sb.channel("dash")
+      .on("postgres_changes", { event: "*", schema: "public" }, (payload) => {
+        if (String(payload.table || "").startsWith("dash_")) loadAll();
+      })
+      .subscribe();
+  }
+
+  /* ---------- writes ---------- */
+  const need = () => {
+    if (ready) return true;
+    $("offline").hidden = false;
+    return false;
+  };
+  const fail = (error) => { if (error) { console.error(error); setLink("false", "Sparade inte"); } else setLink("true", "Delad · live"); };
+
+  $("fb-sections").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-pick]");
+    if (!b) return;
+    section = b.dataset.pick;
+    renderSectionPickers();
+  });
+
+  $("fb-filter").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-filter]");
+    if (!b) return;
+    filter = b.dataset.filter;
+    renderFeedback();
+  });
+
+  $("fb-add").addEventListener("click", async () => {
+    const title = $("fb-title").value.trim();
+    if (!title || !need()) return;
+    const { error } = await sb.from("dash_feedback").insert({
+      id: uid(), title, detail: $("fb-detail").value.trim(), section,
+      status: "open", author: me || "okänd", images: draftImages.slice(),
+    });
+    fail(error);
+    if (error) return;
+    $("fb-title").value = ""; $("fb-detail").value = "";
+    draftImages = [];
+    await loadAll();
+  });
+
+  document.addEventListener("click", async (e) => {
+    const toggle = e.target.closest("[data-toggle]");
+    if (toggle) {
+      const item = state.feedback.find((f) => f.id === toggle.dataset.toggle);
+      if (!item || !need()) return;
+      const fixed = item.status !== "fixed";
+      const { error } = await sb.from("dash_feedback").update({
+        status: fixed ? "fixed" : "open",
+        fixed_by: fixed ? (me || "okänd") : null,
+        fixed_at: fixed ? new Date().toISOString() : null,
+      }).eq("id", item.id);
+      fail(error);
+      await loadAll();
+      return;
+    }
+
+    const del = e.target.closest("[data-del]");
+    if (del) {
+      const [coll, id] = del.dataset.del.split(":");
+      if (!need()) return;
+      fail((await sb.from(TABLE[coll]).delete().eq("id", id)).error);
+      await loadAll();
+      return;
+    }
+
+    const drop = e.target.closest("[data-drop]");
+    if (drop) {
+      const [kind, id] = drop.dataset.drop.split(":");
+      if (kind === "draft") { draftImages = draftImages.filter((x) => x !== id); renderFeedback(); }
+      if (kind === "modal" && openVideo) {
+        openVideo.images = (openVideo.images || []).filter((x) => x !== id);
+        $("m-thumbs").innerHTML = thumbHtml(openVideo.images, "modal");
+      }
+      return;
+    }
+
+    const view = e.target.closest("[data-view]");
+    if (view) {
+      const url = images.get(view.dataset.view);
+      if (url) {
+        const w = window.open("", "_blank", "noopener");
+        if (w) w.document.write('<title>Bild</title><body style="margin:0;background:#111"><img src="' + url + '" style="max-width:100%;height:auto;display:block;margin:0 auto">');
+      }
+      return;
+    }
+
+    const step = e.target.closest("[data-step]");
+    if (step) {
+      const [id, delta] = step.dataset.step.split(":");
+      const g = state.goals.find((x) => x.id === id);
+      if (!g || !need()) return;
+      fail((await sb.from("dash_goals").update({ current: Math.max(0, (+g.current || 0) + (+delta)) }).eq("id", id)).error);
+      await loadAll();
+      return;
+    }
+
+    const mark = e.target.closest("[data-mark]");
+    if (mark) {
+      const g = state.goals.find((x) => x.id === mark.dataset.mark);
+      if (!g || !need()) return;
+      fail((await sb.from("dash_goals").update({ done: !g.done }).eq("id", g.id)).error);
+      await loadAll();
+      return;
+    }
+
+    const goalimg = e.target.closest("[data-goalimg]");
+    if (goalimg) { pickTarget = { kind: "goal", id: goalimg.dataset.goalimg }; $("filepick").click(); return; }
+
+    const open = e.target.closest("[data-open]");
+    if (open) openModal(open.dataset.open);
+  });
+
+  /* A follower count jumps from 340 to 512; nobody steps that one press at a
+     time, so the figure is typeable. */
+  document.addEventListener("change", async (e) => {
+    const set = e.target.closest("[data-set]");
+    if (!set || !need()) return;
+    fail((await sb.from("dash_goals").update({ current: Math.max(0, +set.value || 0) }).eq("id", set.dataset.set)).error);
+    await loadAll();
+  });
+
+  $("bud-input").addEventListener("change", async () => {
+    if (!need()) return;
+    fail((await sb.from("dash_settings").upsert({ key: "budget", value: { monthly: +$("bud-input").value || 0 } })).error);
+    await loadAll();
+  });
+
+  $("pu-add").addEventListener("click", async () => {
+    const label = $("pu-label").value.trim();
+    const amount = +$("pu-amount").value;
+    if (!label || !amount || !need()) return;
+    const { error } = await sb.from("dash_purchases").insert({
+      id: uid(), label, amount, category: $("pu-cat").value, kind: $("pu-kind").value,
+      on_date: $("pu-date").value || today(), author: me || "okänd",
+    });
+    fail(error);
+    if (error) return;
+    $("pu-label").value = ""; $("pu-amount").value = "";
+    await loadAll();
+  });
+
+  $("vd-add").addEventListener("click", async () => {
+    const title = $("vd-title").value.trim();
+    if (!title || !need()) return;
+    const { error } = await sb.from("dash_videos").insert({
+      id: uid(), title, platform: $("vd-platform").value, status: "Idé", author: me || "okänd",
+    });
+    fail(error);
+    if (error) return;
+    $("vd-title").value = "";
+    await loadAll();
+  });
+
+  function syncGoalKind() {
+    const numeric = $("gl-kind").value === "number";
+    document.querySelectorAll('[data-only="number"]').forEach((el) => { el.hidden = !numeric; });
+  }
+  $("gl-kind").addEventListener("change", syncGoalKind);
+  syncGoalKind();
+
+  $("gl-add").addEventListener("click", async () => {
+    const title = $("gl-title").value.trim();
+    const kind = $("gl-kind").value;
+    const target = +$("gl-target").value;
+    if (!title || !need()) return;
+    if (kind === "number" && !target) return;
+    const { error } = await sb.from("dash_goals").insert({
+      id: uid(), title, kind,
+      target: kind === "number" ? target : 0,
+      current: 0,
+      unit: kind === "number" ? ($("gl-unit").value.trim() || "st") : "",
+      done: false,
+      due: $("gl-due").value || null,
+      author: me || "okänd",
+    });
+    fail(error);
+    if (error) return;
+    $("gl-title").value = ""; $("gl-target").value = ""; $("gl-unit").value = ""; $("gl-due").value = "";
+    await loadAll();
+  });
+
+  /* ---------- pictures ---------- */
+  $("fb-attach").addEventListener("click", () => { pickTarget = { kind: "draft" }; $("filepick").click(); });
+  $("m-attach").addEventListener("click", () => { pickTarget = { kind: "modal" }; $("filepick").click(); });
+
+  $("filepick").addEventListener("change", async (e) => {
+    const files = [...(e.target.files || [])];
+    e.target.value = "";
+    if (!files.length || !pickTarget || !need()) return;
+    const target = pickTarget;
+    for (const file of files.slice(0, 6)) {
+      const id = await storeImage(file);
+      if (!id) continue;
+      if (target.kind === "draft") draftImages.push(id);
+      if (target.kind === "modal" && openVideo) openVideo.images = (openVideo.images || []).concat(id);
+      if (target.kind === "goal") {
+        const g = state.goals.find((x) => x.id === target.id);
+        if (g) { await sb.from("dash_goals").update({ images: (g.images || []).concat(id) }).eq("id", g.id); await loadAll(); }
+      }
+    }
+    if (target.kind === "modal" && openVideo) $("m-thumbs").innerHTML = thumbHtml(openVideo.images, "modal");
+    renderFeedback();
+  });
+
+  document.addEventListener("paste", async (e) => {
+    const files = [...(e.clipboardData ? e.clipboardData.files : [])];
+    if (!files.length || !need()) return;
+    e.preventDefault();
+    const intoModal = $("modal").open;
+    for (const file of files.slice(0, 4)) {
+      const id = await storeImage(file);
+      if (!id) continue;
+      if (intoModal && openVideo) openVideo.images = (openVideo.images || []).concat(id);
+      else draftImages.push(id);
+    }
+    if (intoModal && openVideo) $("m-thumbs").innerHTML = thumbHtml(openVideo.images, "modal");
+    else renderFeedback();
+  });
+
+  /* ---------- manuscript ----------
+     A dialog rather than a field in the list, so the list can re-render on a
+     change from the other person without throwing away what is being typed.
+     Saved on the button: streaming a half-written sentence to the other
+     screen makes a shared document unreadable while it is being written. */
+  $("m-status").innerHTML = STAGES.map((s) => "<option>" + s + "</option>").join("");
+
+  function openModal(id) {
+    const v = state.videos.find((x) => x.id === id);
+    if (!v) return;
+    openVideo = JSON.parse(JSON.stringify(v));
+    $("m-title").textContent = v.title;
+    $("m-hook").value = v.hook || "";
+    $("m-script").value = v.script || "";
+    $("m-status").value = STAGES.includes(v.status) ? v.status : "Idé";
+    $("m-platform").value = v.platform || "TikTok";
+    $("m-thumbs").innerHTML = thumbHtml(openVideo.images, "modal");
+    updateCount();
+    $("modal").showModal();
+  }
+
+  function updateCount() {
+    const w = words($("m-script").value);
+    $("m-count").textContent = w ? "Manus — " + w + " ord, ca " + Math.round(w / 2.6) + " s" : "Manus";
+  }
+  $("m-script").addEventListener("input", updateCount);
+
+  $("m-save").addEventListener("click", async () => {
+    if (!openVideo || !need()) return;
+    const { error } = await sb.from("dash_videos").update({
+      hook: $("m-hook").value, script: $("m-script").value,
+      status: $("m-status").value, platform: $("m-platform").value,
+      images: openVideo.images || [], updated_at: new Date().toISOString(),
+    }).eq("id", openVideo.id);
+    fail(error);
+    $("modal").close();
+    await loadAll();
+  });
+
+  $("m-delete").addEventListener("click", async () => {
+    if (!openVideo || !need()) return;
+    fail((await sb.from("dash_videos").delete().eq("id", openVideo.id)).error);
+    $("modal").close();
+    await loadAll();
+  });
+
+  /* ---------- sign in ---------- */
+  const gate = $("gate");
+  const msg = (text, ok) => { $("g-msg").textContent = text; $("g-msg").dataset.ok = !!ok; };
+
+  async function enter(session) {
+    if (!session) { gate.hidden = false; return; }
+    gate.hidden = true;
+    setLink("pending", "Hämtar");
+    await loadAll();
+    subscribe();
+  }
+
+  $("gate-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg("");
+    const { error } = await sb.auth.signInWithPassword({ email: $("g-mail").value.trim(), password: $("g-pass").value });
+    if (error) msg("Kunde inte logga in: " + error.message);
+  });
+
+  $("g-up").addEventListener("click", async () => {
+    msg("");
+    const email = $("g-mail").value.trim();
+    if (!email || $("g-pass").value.length < 6) { msg("Mejl och minst sex tecken i lösenordet."); return; }
+    const { error } = await sb.auth.signUp({ email, password: $("g-pass").value });
+    if (error) msg("Kunde inte skapa kontot: " + error.message);
+    else msg("Kontot är skapat. Är e-postbekräftelse påslagen får du ett mejl först — klicka länken och logga sedan in.", true);
+  });
+
+  $("signout").addEventListener("click", async () => {
+    await sb.auth.signOut();
+    location.reload();
+  });
+
+  sb.auth.onAuthStateChange((_event, session) => { void enter(session); });
+
+  /* ---------- start ---------- */
+  $("pu-date").value = today();
+  renderAll();
+  sb.auth.getSession().then(({ data }) => enter(data.session));
+})();
+</script>
+</body>
+</html>
