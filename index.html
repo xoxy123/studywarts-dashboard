@@ -626,6 +626,55 @@
     .intro-rule { width: min(320px, 62vw); animation: none; }
     .intro-spell { -webkit-text-fill-color: var(--accent); }
   }
+
+  /* ---------- video: drop, watch, hand over ----------
+     The clip is the content, so it is shown at size and playable in place.
+     Everything else on the card is one line of text and one button. */
+
+  .drop {
+    display: grid;
+    place-items: center;
+    gap: 6px;
+    min-height: 130px;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+    background: var(--surface-2);
+    color: var(--muted);
+    font-size: 0.86rem;
+    text-align: center;
+    cursor: pointer;
+  }
+  .drop:hover, .drop[data-over="true"] { border-color: var(--accent); color: var(--text); }
+  .drop[data-busy="true"] { cursor: progress; border-style: solid; border-color: var(--accent); }
+  .drop strong { color: var(--accent); font-family: var(--display); font-size: 0.78rem;
+    font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  .drop small { font-family: var(--mono); font-size: 0.62rem; }
+
+  /* A class with `display` beats the browser's own `[hidden]` rule, so the
+     empty preview rendered as a black box until this said otherwise. */
+  .player[hidden] { display: none; }
+
+  .player {
+    display: block;
+    width: 100%;
+    max-height: 460px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #000;
+  }
+
+  .vid-notes {
+    margin: 0;
+    border-left: 2px solid var(--accent-soft);
+    padding: 2px 0 2px 12px;
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  .vid[data-lane="done"] .vid-title strong { color: var(--muted); }
+  .vid-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 </style>
 
 </head>
@@ -774,21 +823,15 @@
     <div class="card">
       <h2>Skicka video till edit</h2>
       <div class="card-body">
-        <label class="field"><span>Titel</span>
-          <input type="text" id="vd-title" maxlength="180" placeholder="Vad är det för klipp">
-        </label>
-        <label class="field"><span>Oeditad video</span>
-          <input type="text" id="vd-raw" placeholder="Tja Little Gahba, infoga oeditad video här">
-        </label>
-        <label class="field"><span>Vad ska editeras</span>
-          <textarea id="vd-notes" rows="3" placeholder="skriv vad som ska editeras här"></textarea>
-        </label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <select id="vd-platform" aria-label="Plattform">
-            <option>TikTok</option><option>Instagram</option><option>YouTube</option><option>Flera</option>
-          </select>
-          <button class="btn" data-primary id="vd-add" type="button">Skicka till edit</button>
+        <div class="drop" id="vd-drop" tabindex="0" role="button"
+             aria-label="Tja Little Gahba, infoga oeditad video här">
+          <strong>Tja Little Gahba</strong>
+          <span>infoga oeditad video här</span>
+          <small>klicka eller släpp filen · max 50 MB</small>
         </div>
+        <video class="player" id="vd-preview" controls hidden></video>
+        <textarea id="vd-notes" rows="3" placeholder="skriv vad som ska editeras här"></textarea>
+        <div><button class="btn" data-primary id="vd-add" type="button">Skicka till edit</button></div>
       </div>
     </div>
 
@@ -799,7 +842,9 @@
       <h2>Idéer</h2>
       <div class="card-body">
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input type="text" id="id-title" maxlength="180" placeholder="Idé — video, slideshow, thumbnail, vad som helst" style="flex:1 1 260px;min-width:0">
+          <input type="text" id="id-title" maxlength="180"
+                 placeholder="Idé — video, slideshow, thumbnail, vad som helst"
+                 style="flex:1 1 260px;min-width:0">
           <button class="btn" data-primary id="id-add" type="button">Lägg till</button>
         </div>
       </div>
@@ -1022,6 +1067,56 @@
     }).join("") + "</div>";
   }
 
+  /* ---------- video files ----------
+     The bucket is public to read, so the URL a card stores can go straight
+     into a <video> tag; nothing has to be signed or re-signed while somebody
+     is watching. Writing is gated on the same code as every table. */
+  const VIDEO_BUCKET = "dash-videos";
+  const VIDEO_MAX = 50 * 1024 * 1024;
+
+  async function uploadVideo(file, onState) {
+    if (!file.type.startsWith("video/")) {
+      onState("Det där är ingen videofil.");
+      return null;
+    }
+    if (file.size > VIDEO_MAX) {
+      onState("Filen är " + (file.size / 1048576).toFixed(0) + " MB. Gränsen är 50 MB.");
+      return null;
+    }
+    const ext = (file.name.split(".").pop() || "mp4").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const path = uid() + "." + (ext.length <= 5 ? ext : "mp4");
+    onState("Laddar upp " + (file.size / 1048576).toFixed(1) + " MB…");
+    const { error } = await sb.storage.from(VIDEO_BUCKET).upload(path, file, {
+      contentType: file.type, upsert: false,
+    });
+    if (error) { onState("Uppladdningen misslyckades: " + error.message); return null; }
+    onState("");
+    return sb.storage.from(VIDEO_BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  /* Click or drop, on any zone that names where the result should go. */
+  function wireDrop(zone, onFile) {
+    const pick = document.createElement("input");
+    pick.type = "file";
+    pick.accept = "video/*";
+    pick.hidden = true;
+    zone.after(pick);
+
+    const take = (file) => { if (file) void onFile(file); };
+    zone.addEventListener("click", () => pick.click());
+    zone.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick.click(); }
+    });
+    pick.addEventListener("change", () => { const f = pick.files[0]; pick.value = ""; take(f); });
+    ["dragenter", "dragover"].forEach((t) => zone.addEventListener(t, (e) => {
+      e.preventDefault(); zone.dataset.over = "true";
+    }));
+    ["dragleave", "drop"].forEach((t) => zone.addEventListener(t, (e) => {
+      e.preventDefault(); zone.dataset.over = "false";
+    }));
+    zone.addEventListener("drop", (e) => take(e.dataTransfer && e.dataTransfer.files[0]));
+  }
+
   /* ---------- tabs ---------- */
   const TABS = [["feedback", "Feedback"], ["budget", "Budget"], ["video", "Video & manus"], ["goals", "Mål"]];
   let tab = "feedback";
@@ -1146,37 +1241,37 @@
   /* ---------- video ---------- */
   const words = (s) => (s || "").trim() ? (s || "").trim().split(/\s+/).length : 0;
 
-  const linkHtml = (url, missing) => url
-    ? '<a class="vid-link" href="' + esc(url) + '" target="_blank" rel="noreferrer noopener">' + esc(url) + "</a>"
-    : '<span class="vid-link" data-missing="true">' + esc(missing) + "</span>";
+  const playerHtml = (url) => url
+    ? '<video class="player" controls preload="metadata" src="' + esc(url) + '"></video>'
+    : "";
 
   function videoCard(v) {
-    const w = words(v.script);
-    const meta = esc(v.platform || "TikTok") + " · " +
-      (w ? w + " ord manus · ca " + Math.round(w / 2.6) + " s" : "inget manus än") +
-      " · " + esc(v.author || "någon") + " " + day(v.createdAt);
-
+    const who = esc(v.author || "någon") + " " + day(v.createdAt);
     let body;
+
     if (v.lane === "edit") {
-      body = linkHtml(v.rawUrl, "ingen länk till råmaterialet än") +
+      body = playerHtml(v.rawUrl) +
         (v.editNotes ? '<p class="vid-notes">' + esc(v.editNotes) + "</p>" : "") +
         '<div class="vid-row">' +
-          '<button class="btn" data-primary type="button" data-lane="' + v.id + ':done">Markera klar</button>' +
+          '<button class="btn" data-primary type="button" data-lane="' + v.id + ':done">Klar</button>' +
           '<button class="btn" type="button" data-open="' + v.id + '">Manus</button>' +
-          '<button class="attach" type="button" data-vidimg="' + v.id + '">Bild</button>' +
           '<button class="btn-ghost" type="button" data-del="videos:' + v.id + '">Ta bort</button>' +
         "</div>";
     } else if (v.lane === "done") {
-      body = '<div class="vid-row"><input type="text" value="' + esc(v.finalUrl) + '" data-final="' + v.id + '" ' +
-          'placeholder="Klistra in den klara videon här" aria-label="Klar video för ' + esc(v.title) + '"></div>' +
-        (v.finalUrl ? linkHtml(v.finalUrl, "") : "") +
+      body = (v.finalUrl
+        ? playerHtml(v.finalUrl)
+        : '<div class="drop" data-finaldrop="' + v.id + '" tabindex="0" role="button">' +
+            "<strong>Klar version</strong><span>infoga den färdiga videon här</span>" +
+            "<small>klicka eller släpp filen</small></div>") +
+        (v.editNotes ? '<p class="vid-notes">' + esc(v.editNotes) + "</p>" : "") +
         '<div class="vid-row">' +
           '<button class="btn" type="button" data-lane="' + v.id + ':edit">Tillbaka till edit</button>' +
           '<button class="btn" type="button" data-open="' + v.id + '">Manus</button>' +
           '<button class="btn-ghost" type="button" data-del="videos:' + v.id + '">Ta bort</button>' +
         "</div>";
     } else {
-      body = (v.editNotes ? '<p class="vid-notes">' + esc(v.editNotes) + "</p>" : "") +
+      body = playerHtml(v.rawUrl) +
+        (v.editNotes ? '<p class="vid-notes">' + esc(v.editNotes) + "</p>" : "") +
         '<div class="vid-row">' +
           '<button class="btn" type="button" data-lane="' + v.id + ':edit">Skicka till edit</button>' +
           '<button class="btn" type="button" data-open="' + v.id + '">Manus</button>' +
@@ -1188,7 +1283,8 @@
     return '<article class="vid" data-lane="' + esc(v.lane) + '">' +
       '<div class="vid-top"><button class="vid-title" type="button" data-open="' + v.id + '">' +
         "<strong>" + esc(v.title) + "</strong></button></div>" +
-      '<div class="vid-meta">' + meta + (v.lane === "done" && v.doneAt ? " · klar " + day(v.doneAt) : "") + "</div>" +
+      '<div class="vid-meta">' + who +
+        (v.lane === "done" && v.doneAt ? " · klar " + day(v.doneAt) : "") + "</div>" +
       body + thumbHtml(v.images, null) +
     "</article>";
   }
@@ -1201,11 +1297,29 @@
     const waiting = byLane("edit"), done = byLane("done"), ideas = byLane("idea");
 
     $("vd-edit").innerHTML = waiting.length ? waiting.map(videoCard).join("")
-      : empty("Inget väntar på edit. Skicka in ett klipp ovan och skriv vad som ska göras med det.");
+      : empty("Inget väntar på edit. Släpp in ett klipp ovan och skriv vad som ska göras med det.");
     $("vd-done").innerHTML = done.length ? done.map(videoCard).join("")
-      : empty("Inga klara videor än. En video som markeras klar hamnar här, och då klistrar du in den färdiga versionen.");
+      : empty("Inga klara videor än. Tryck Klar på ett klipp, så dyker det upp här med en ruta för den färdiga versionen.");
     $("vd-ideas").innerHTML = ideas.length ? ideas.map(videoCard).join("")
       : empty("Inga idéer än. Vad som helst duger — en video, en slideshow, en thumbnail.");
+
+    // The finished-clip zones live inside cards that were just re-rendered, so
+    // they are wired here rather than once at start-up.
+    document.querySelectorAll("[data-finaldrop]").forEach((zone) => {
+      if (zone.dataset.wired) return;
+      zone.dataset.wired = "1";
+      const id = zone.dataset.finaldrop;
+      wireDrop(zone, async (file) => {
+        zone.dataset.busy = "true";
+        const url = await uploadVideo(file, (t) => { zone.querySelector("span").textContent = t || "infoga den färdiga videon här"; });
+        zone.dataset.busy = "false";
+        if (!url || !need()) return;
+        fail((await sb.from("dash_videos").update({
+          final_url: url, updated_at: new Date().toISOString(),
+        }).eq("id", id)).error);
+        await loadAll();
+      });
+    });
   }
 
   /* ---------- goals ---------- */
@@ -1525,17 +1639,39 @@
     await loadAll();
   });
 
+  /* One clip at a time: it uploads the moment it is dropped, so the card is
+     created with a URL already in hand and "Skicka" never waits on a network
+     call the person cannot see. */
+  let pendingVideo = null;
+  const dropZone = $("vd-drop");
+  const dropLine = dropZone.querySelector("span");
+
+  wireDrop(dropZone, async (file) => {
+    if (!need()) return;
+    dropZone.dataset.busy = "true";
+    const url = await uploadVideo(file, (t) => { dropLine.textContent = t || "infoga oeditad video här"; });
+    dropZone.dataset.busy = "false";
+    if (!url) return;
+    pendingVideo = { url, name: file.name || "klipp" };
+    dropLine.textContent = file.name || "klipp";
+    $("vd-preview").src = url;
+    $("vd-preview").hidden = false;
+  });
+
   $("vd-add").addEventListener("click", async () => {
-    const title = $("vd-title").value.trim();
-    if (!title || !need()) return;
+    const notes = $("vd-notes").value.trim();
+    if (!pendingVideo || !need()) return;
     const { error } = await sb.from("dash_videos").insert({
-      id: uid(), title, platform: $("vd-platform").value, status: "Klipps",
-      lane: "edit", raw_url: $("vd-raw").value.trim(), edit_notes: $("vd-notes").value.trim(),
-      author: me || "okänd",
+      id: uid(), title: pendingVideo.name, platform: "Flera", status: "Klipps",
+      lane: "edit", raw_url: pendingVideo.url, edit_notes: notes, author: me || "okänd",
     });
     fail(error);
     if (error) return;
-    $("vd-title").value = ""; $("vd-raw").value = ""; $("vd-notes").value = "";
+    pendingVideo = null;
+    $("vd-notes").value = "";
+    $("vd-preview").hidden = true;
+    $("vd-preview").removeAttribute("src");
+    dropLine.textContent = "infoga oeditad video här";
     await loadAll();
   });
 
