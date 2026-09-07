@@ -675,6 +675,58 @@
   }
   .vid[data-lane="done"] .vid-title strong { color: var(--muted); }
   .vid-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+  /* ---------- looking at an attached picture ----------
+     In the page, not in a new tab. window.open is blocked by default in most
+     browsers when it is not a direct link click, which is why tapping a
+     thumbnail did nothing at all. */
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    background: rgba(6, 5, 3, 0.94);
+    cursor: zoom-out;
+  }
+  .lightbox[hidden] { display: none; }
+  .lightbox img {
+    max-width: 100%;
+    max-height: calc(100vh - 110px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    object-fit: contain;
+  }
+  .lightbox figcaption {
+    position: absolute;
+    bottom: 26px;
+    left: 0;
+    right: 0;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .lightbox-close:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 
 </head>
@@ -687,6 +739,12 @@
   <p class="intro-go">Nu kör vi! Mata på!</p>
   <span class="intro-skip">Klicka för att hoppa över</span>
 </div>
+
+<figure class="lightbox" id="lightbox" hidden aria-label="Bifogad bild">
+  <button class="lightbox-close" id="lb-close" type="button" aria-label="Stäng bilden">✕</button>
+  <img id="lb-img" alt="">
+  <figcaption>Klicka var som helst eller tryck Esc för att stänga</figcaption>
+</figure>
 
 <div id="gate" class="gate">
   <form class="gate-card" id="gate-form">
@@ -1117,6 +1175,20 @@
     zone.addEventListener("drop", (e) => take(e.dataTransfer && e.dataTransfer.files[0]));
   }
 
+  /* ---------- looking at a picture ---------- */
+  function openLightbox(url) {
+    $("lb-img").src = url;
+    $("lightbox").hidden = false;
+  }
+  function closeLightbox() {
+    $("lightbox").hidden = true;
+    $("lb-img").removeAttribute("src");
+  }
+  $("lightbox").addEventListener("click", closeLightbox);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("lightbox").hidden) closeLightbox();
+  });
+
   /* ---------- tabs ---------- */
   const TABS = [["feedback", "Feedback"], ["budget", "Budget"], ["video", "Video & manus"], ["goals", "Mål"]];
   let tab = "feedback";
@@ -1526,10 +1598,7 @@
     const view = e.target.closest("[data-view]");
     if (view) {
       const url = images.get(view.dataset.view);
-      if (url) {
-        const w = window.open("", "_blank", "noopener");
-        if (w) w.document.write('<title>Bild</title><body style="margin:0;background:#111"><img src="' + url + '" style="max-width:100%;height:auto;display:block;margin:0 auto">');
-      }
+      if (url) openLightbox(url);
       return;
     }
 
