@@ -546,10 +546,98 @@
   .gate-msg:empty { display: none; }
   .gate-msg { color: var(--fixed); font-size: 0.82rem; }
   .gate-msg[data-ok="true"] { color: var(--accent); }
+
+  /* ---------- the way in ---------- */
+  .intro { position: fixed; inset: 0; z-index: 80; display: grid; align-content: center;
+    justify-items: center; gap: 22px; padding: 24px; text-align: center; cursor: pointer;
+    background: radial-gradient(90% 55% at 50% 42%, rgba(217,180,95,0.13), rgba(217,180,95,0) 70%), var(--ground); }
+  .intro[hidden] { display: none; }
+  .intro.is-leaving { animation: intro-out 0.45s ease forwards; }
+  .intro-greet { max-width: 22ch; color: var(--accent-hi); font-family: var(--display);
+    font-size: clamp(1.05rem, 4.2vw, 1.75rem); font-weight: 600; letter-spacing: 0.16em;
+    line-height: 1.35; text-transform: uppercase; text-wrap: balance; }
+  .intro-rule { width: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+  /* The sweep moves a gradient across the glyphs themselves, and comes to rest
+     inside a gold band rather than on the pale highlight. */
+  .intro-spell { max-width: 90vw; color: var(--accent); font-family: var(--mono);
+    font-size: clamp(0.78rem, 3.4vw, 1.18rem); letter-spacing: 0.04em; overflow-wrap: anywhere;
+    background: linear-gradient(100deg, var(--accent) 0%, var(--accent) 38%, #fff6dc 50%, var(--accent) 62%, var(--accent) 100%);
+    background-size: 260% 100%; background-position: 140% 0;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .intro-spell::before { content: "\201D"; opacity: 0.55; }
+  .intro-spell::after { content: "\201D"; opacity: 0.55; }
+  .intro-go { color: var(--text); font-family: var(--display); font-size: clamp(0.82rem, 3vw, 1.05rem);
+    font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
+  .intro-skip { position: absolute; bottom: 26px; color: var(--muted); font-family: var(--mono);
+    font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; }
+  .intro-greet, .intro-spell, .intro-go, .intro-skip { opacity: 0;
+    animation: intro-rise 0.62s cubic-bezier(0.2,0.75,0.3,1) forwards; }
+  .intro-greet { animation-delay: 0.1s; }
+  .intro-rule { animation: intro-widen 0.7s cubic-bezier(0.2,0.75,0.3,1) 0.55s forwards; }
+  .intro-spell { animation: intro-rise 0.62s cubic-bezier(0.2,0.75,0.3,1) 0.85s forwards,
+    intro-sweep 1.5s ease-in-out 1.15s 1 forwards; }
+  .intro-go { animation-delay: 1.75s; }
+  .intro-skip { animation-delay: 2.3s; }
+  @keyframes intro-rise { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+  @keyframes intro-widen { from { width: 0; } to { width: min(320px, 62vw); } }
+  @keyframes intro-sweep { from { background-position: 140% 0; } to { background-position: -140% 0; } }
+  @keyframes intro-out { to { opacity: 0; visibility: hidden; } }
+
+  /* ---------- quote of the week ---------- */
+  .quote { display: grid; gap: 12px; border: 1px solid var(--line); border-radius: var(--radius);
+    margin-top: 22px; padding: 20px 22px;
+    background: radial-gradient(120% 160% at 0% 0%, rgba(217,180,95,0.08), rgba(217,180,95,0) 60%),
+      linear-gradient(var(--surface-2), var(--surface)); }
+  .quote-eyebrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; color: var(--accent);
+    font-family: var(--display); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
+  .quote-eyebrow em { color: var(--muted); font-family: var(--mono); font-size: 0.6rem;
+    font-style: normal; letter-spacing: 0.06em; text-transform: none; }
+  .quote-text { margin: 0; color: var(--text); font-family: var(--sans);
+    font-size: clamp(1rem, 2.6vw, 1.32rem); font-style: italic; line-height: 1.45; text-wrap: balance; }
+  .quote-text::before { content: "\201D"; color: var(--accent); margin-right: 2px; }
+  .quote-text::after { content: "\201D"; color: var(--accent); margin-left: 2px; }
+  .quote-empty { color: var(--muted); font-size: 0.88rem; font-style: normal; }
+  .quote-by { color: var(--muted); font-family: var(--mono); font-size: 0.64rem; }
+  .quote-form { display: flex; flex-wrap: wrap; gap: 8px; }
+  .quote-form input { flex: 1 1 260px; min-width: 0; }
+  .quote-queue { display: grid; gap: 5px; margin: 0; border-top: 1px solid var(--line-soft);
+    padding: 10px 0 0; list-style: none; }
+  .quote-queue li { display: flex; align-items: baseline; gap: 9px; color: var(--muted); font-size: 0.82rem; }
+  .quote-queue b { color: var(--accent); font-family: var(--mono); font-size: 0.6rem;
+    font-weight: 500; letter-spacing: 0.06em; white-space: nowrap; }
+  .quote-queue span { flex: 1; }
+
+  /* ---------- video lanes ---------- */
+  .vid-link { display: inline-flex; align-items: center; gap: 7px; max-width: 100%;
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 11px;
+    background: var(--surface-2); color: var(--accent); font-family: var(--mono);
+    font-size: 0.72rem; overflow-wrap: anywhere; text-decoration: none; }
+  .vid-link:hover { border-color: var(--accent); color: var(--accent-hi); }
+  .vid-link[data-missing="true"] { color: var(--muted); border-style: dashed; }
+  .vid-notes { margin: 0; border-left: 2px solid var(--accent-soft); padding: 2px 0 2px 12px;
+    color: var(--text); font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; }
+  .vid[data-lane="done"] { opacity: 0.82; }
+  .vid[data-lane="done"] .vid-title strong { color: var(--muted); }
+  .vid-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .vid-row input[type="text"] { flex: 1 1 240px; min-width: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .intro-greet, .intro-spell, .intro-go, .intro-skip { opacity: 1; animation: none; }
+    .intro-rule { width: min(320px, 62vw); animation: none; }
+    .intro-spell { -webkit-text-fill-color: var(--accent); }
+  }
 </style>
 
 </head>
 <body>
+
+<div id="intro" class="intro" hidden aria-live="polite">
+  <p class="intro-greet">Välkommen till Studywarts Dashboard</p>
+  <span class="intro-rule"></span>
+  <p class="intro-spell">jagärskyldigtillmorotsdådet2024</p>
+  <p class="intro-go">Nu kör vi! Mata på!</p>
+  <span class="intro-skip">Klicka för att hoppa över</span>
+</div>
 
 <div id="gate" class="gate">
   <form class="gate-card" id="gate-form">
@@ -582,6 +670,16 @@
 </header>
 
 <main class="wrap">
+  <section class="quote" id="quote" aria-label="Veckans quote">
+    <div class="quote-eyebrow">Veckans quote <em id="q-week"></em></div>
+    <p class="quote-text" id="q-text"></p>
+    <div class="quote-by" id="q-by"></div>
+    <form class="quote-form" id="q-form">
+      <input type="text" id="q-input" maxlength="240" placeholder="Lägg in en quote">
+      <button class="btn" data-primary type="submit" id="q-add">Lägg in</button>
+    </form>
+    <ul class="quote-queue" id="q-queue"></ul>
+  </section>
   <div id="offline" class="notice" hidden>
     Sidan når inte den delade databasen just nu, så inget du skriver sparas. Ladda om sidan; håller det i sig är
     delningen eller åtkomsten ändrad.
@@ -674,20 +772,38 @@
   <!-- VIDEO -->
   <section id="p-video" class="panel" role="tabpanel" aria-label="Video" hidden>
     <div class="card">
-      <h2>Ny video</h2>
+      <h2>Skicka video till edit</h2>
       <div class="card-body">
-        <div class="grid-3">
-          <label class="field"><span>Titel</span><input type="text" id="vd-title" maxlength="180" placeholder="Arbetsnamn"></label>
-          <label class="field"><span>Plattform</span>
-            <select id="vd-platform"><option>TikTok</option><option>Instagram</option><option>YouTube</option><option>Flera</option></select>
-          </label>
+        <label class="field"><span>Titel</span>
+          <input type="text" id="vd-title" maxlength="180" placeholder="Vad är det för klipp">
+        </label>
+        <label class="field"><span>Oeditad video</span>
+          <input type="text" id="vd-raw" placeholder="Tja Little Gahba, infoga oeditad video här">
+        </label>
+        <label class="field"><span>Vad ska editeras</span>
+          <textarea id="vd-notes" rows="3" placeholder="skriv vad som ska editeras här"></textarea>
+        </label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select id="vd-platform" aria-label="Plattform">
+            <option>TikTok</option><option>Instagram</option><option>YouTube</option><option>Flera</option>
+          </select>
+          <button class="btn" data-primary id="vd-add" type="button">Skicka till edit</button>
         </div>
-        <div><button class="btn" data-primary id="vd-add" type="button">Lägg till</button></div>
       </div>
     </div>
+
+    <div class="card"><h2>Väntar på edit</h2><div id="vd-edit"></div></div>
+    <div class="card"><h2>Klara</h2><div id="vd-done"></div></div>
+
     <div class="card">
-      <h2>Manus</h2>
-      <div id="vd-list"></div>
+      <h2>Idéer</h2>
+      <div class="card-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="id-title" maxlength="180" placeholder="Idé — video, slideshow, thumbnail, vad som helst" style="flex:1 1 260px;min-width:0">
+          <button class="btn" data-primary id="id-add" type="button">Lägg till</button>
+        </div>
+      </div>
+      <div id="vd-ideas"></div>
     </div>
   </section>
 
@@ -795,6 +911,23 @@
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const today = () => new Date().toISOString().slice(0, 10);
 
+  /* ISO weeks, so a quote belongs to a week rather than a place in a list and
+     the queue advances by itself when Monday comes. Thursday of the same week
+     decides the year, which is the point of the ISO rule: the last days of
+     December can belong to week 1 of the next year. */
+  function isoWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return d.getUTCFullYear() + "-W" + String(Math.ceil(((d - yearStart) / 86400000 + 1) / 7)).padStart(2, "0");
+  }
+  const weekPlus = (n) => { const d = new Date(); d.setDate(d.getDate() + n * 7); return isoWeek(d); };
+  const weekLabel = (key) => {
+    if (key === isoWeek(new Date())) return "den här veckan";
+    if (key === weekPlus(1)) return "nästa vecka";
+    return "v " + key.split("-W")[1];
+  };
+
   /* ---------- who am I, locally ---------- */
   let me = "";
   try { me = localStorage.getItem("sw-who") || ""; } catch (_) {}
@@ -805,7 +938,7 @@
   });
 
   /* ---------- state ---------- */
-  const state = { feedback: [], purchases: [], videos: [], goals: [], budget: 0 };
+  const state = { feedback: [], purchases: [], videos: [], goals: [], quotes: [], budget: 0 };
   const images = new Map();
   const wanted = new Set();
   let draftImages = [];
@@ -830,11 +963,15 @@
     purchases: (r) => ({ id: r.id, label: r.label, amount: +r.amount, category: r.category, kind: r.kind,
       on: r.on_date, author: r.author, createdAt: r.created_at }),
     videos: (r) => ({ id: r.id, title: r.title, platform: r.platform, status: r.status, hook: r.hook,
-      script: r.script, images: r.images || [], author: r.author, createdAt: r.created_at, updatedAt: r.updated_at }),
+      script: r.script, images: r.images || [], author: r.author, createdAt: r.created_at, updatedAt: r.updated_at,
+      lane: r.lane || "idea", rawUrl: r.raw_url || "", finalUrl: r.final_url || "",
+      editNotes: r.edit_notes || "", doneAt: r.done_at }),
     goals: (r) => ({ id: r.id, title: r.title, kind: r.kind, target: +r.target, current: +r.current,
       unit: r.unit, done: r.done, due: r.due || "", images: r.images || [], author: r.author, createdAt: r.created_at }),
+    quotes: (r) => ({ id: r.id, text: r.text, author: r.author, week: r.week, createdAt: r.created_at }),
   };
-  const TABLE = { feedback: "dash_feedback", purchases: "dash_purchases", videos: "dash_videos", goals: "dash_goals" };
+  const TABLE = { feedback: "dash_feedback", purchases: "dash_purchases", videos: "dash_videos",
+    goals: "dash_goals", quotes: "dash_quotes" };
 
   /* ---------- images ----------
      One picture per row in its own table, compressed in the browser first.
@@ -1009,28 +1146,66 @@
   /* ---------- video ---------- */
   const words = (s) => (s || "").trim() ? (s || "").trim().split(/\s+/).length : 0;
 
-  function renderVideos() {
-    const list = [...state.videos].sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
-    if (!list.length) {
-      $("vd-list").innerHTML = '<div class="empty"><strong>Inga videor än</strong>' +
-        "<span>Lägg till en titel ovan, öppna den och skriv manuset. Ordräkning och ungefärlig taltid räknas medan du skriver.</span></div>";
-      return;
+  const linkHtml = (url, missing) => url
+    ? '<a class="vid-link" href="' + esc(url) + '" target="_blank" rel="noreferrer noopener">' + esc(url) + "</a>"
+    : '<span class="vid-link" data-missing="true">' + esc(missing) + "</span>";
+
+  function videoCard(v) {
+    const w = words(v.script);
+    const meta = esc(v.platform || "TikTok") + " · " +
+      (w ? w + " ord manus · ca " + Math.round(w / 2.6) + " s" : "inget manus än") +
+      " · " + esc(v.author || "någon") + " " + day(v.createdAt);
+
+    let body;
+    if (v.lane === "edit") {
+      body = linkHtml(v.rawUrl, "ingen länk till råmaterialet än") +
+        (v.editNotes ? '<p class="vid-notes">' + esc(v.editNotes) + "</p>" : "") +
+        '<div class="vid-row">' +
+          '<button class="btn" data-primary type="button" data-lane="' + v.id + ':done">Markera klar</button>' +
+          '<button class="btn" type="button" data-open="' + v.id + '">Manus</button>' +
+          '<button class="attach" type="button" data-vidimg="' + v.id + '">Bild</button>' +
+          '<button class="btn-ghost" type="button" data-del="videos:' + v.id + '">Ta bort</button>' +
+        "</div>";
+    } else if (v.lane === "done") {
+      body = '<div class="vid-row"><input type="text" value="' + esc(v.finalUrl) + '" data-final="' + v.id + '" ' +
+          'placeholder="Klistra in den klara videon här" aria-label="Klar video för ' + esc(v.title) + '"></div>' +
+        (v.finalUrl ? linkHtml(v.finalUrl, "") : "") +
+        '<div class="vid-row">' +
+          '<button class="btn" type="button" data-lane="' + v.id + ':edit">Tillbaka till edit</button>' +
+          '<button class="btn" type="button" data-open="' + v.id + '">Manus</button>' +
+          '<button class="btn-ghost" type="button" data-del="videos:' + v.id + '">Ta bort</button>' +
+        "</div>";
+    } else {
+      body = (v.editNotes ? '<p class="vid-notes">' + esc(v.editNotes) + "</p>" : "") +
+        '<div class="vid-row">' +
+          '<button class="btn" type="button" data-lane="' + v.id + ':edit">Skicka till edit</button>' +
+          '<button class="btn" type="button" data-open="' + v.id + '">Manus</button>' +
+          '<button class="attach" type="button" data-vidimg="' + v.id + '">Bild</button>' +
+          '<button class="btn-ghost" type="button" data-del="videos:' + v.id + '">Ta bort</button>' +
+        "</div>";
     }
-    $("vd-list").innerHTML = list.map((v) => {
-      const w = words(v.script);
-      const stageIndex = Math.max(0, STAGES.indexOf(v.status || "Idé"));
-      return '<article class="vid">' +
-        '<div class="vid-top">' +
-          '<button class="vid-title" type="button" data-open="' + v.id + '">' + esc(v.title) + "</button>" +
-          '<span class="stage" title="' + esc(v.status || "Idé") + '">' +
-            STAGES.map((_, i) => '<i data-on="' + (i <= stageIndex) + '"></i>').join("") + "</span>" +
-        "</div>" +
-        '<div class="vid-meta">' + esc(v.platform || "TikTok") + " · " + esc(v.status || "Idé") + " · " +
-          (w ? w + " ord · ca " + Math.round(w / 2.6) + " s" : "inget manus än") + "</div>" +
-        (v.hook ? '<p class="fb-detail">' + esc(v.hook) + "</p>" : "") +
-        thumbHtml(v.images, null) +
-      "</article>";
-    }).join("");
+
+    return '<article class="vid" data-lane="' + esc(v.lane) + '">' +
+      '<div class="vid-top"><button class="vid-title" type="button" data-open="' + v.id + '">' +
+        "<strong>" + esc(v.title) + "</strong></button></div>" +
+      '<div class="vid-meta">' + meta + (v.lane === "done" && v.doneAt ? " · klar " + day(v.doneAt) : "") + "</div>" +
+      body + thumbHtml(v.images, null) +
+    "</article>";
+  }
+
+  function renderVideos() {
+    const byLane = (lane) => state.videos
+      .filter((v) => (v.lane || "idea") === lane)
+      .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+    const empty = (text) => '<div class="empty"><strong>Tomt</strong><span>' + text + "</span></div>";
+    const waiting = byLane("edit"), done = byLane("done"), ideas = byLane("idea");
+
+    $("vd-edit").innerHTML = waiting.length ? waiting.map(videoCard).join("")
+      : empty("Inget väntar på edit. Skicka in ett klipp ovan och skriv vad som ska göras med det.");
+    $("vd-done").innerHTML = done.length ? done.map(videoCard).join("")
+      : empty("Inga klara videor än. En video som markeras klar hamnar här, och då klistrar du in den färdiga versionen.");
+    $("vd-ideas").innerHTML = ideas.length ? ideas.map(videoCard).join("")
+      : empty("Inga idéer än. Vad som helst duger — en video, en slideshow, en thumbnail.");
   }
 
   /* ---------- goals ---------- */
@@ -1098,7 +1273,33 @@
     }).join("");
   }
 
+  function renderQuote() {
+    const now = isoWeek(new Date());
+    const current = state.quotes.find((q) => q.week === now);
+    const ahead = state.quotes.filter((q) => q.week > now).sort((a, b) => a.week.localeCompare(b.week));
+
+    $("q-week").textContent = current ? weekLabel(current.week) : "";
+    if (current) {
+      $("q-text").textContent = current.text;
+      $("q-text").classList.remove("quote-empty");
+      $("q-by").textContent = current.author ? "— " + current.author : "";
+    } else {
+      $("q-text").textContent = "Ingen quote den här veckan. Den du lägger in nu blir veckans.";
+      $("q-text").classList.add("quote-empty");
+      $("q-by").textContent = "";
+    }
+    $("q-input").placeholder = current
+      ? "Lägg in en quote — hamnar i kö för " + weekLabel(weekPlus(1))
+      : "Lägg in veckans quote";
+
+    $("q-queue").innerHTML = ahead.map((q) =>
+      "<li><b>" + esc(weekLabel(q.week)) + "</b><span>" + esc(q.text) + "</span>" +
+      (q.author ? '<span class="quote-by" style="flex:0">— ' + esc(q.author) + "</span>" : "") +
+      '<button class="btn-ghost" type="button" data-del="quotes:' + q.id + '">Ta bort</button></li>').join("");
+  }
+
   function renderAll() {
+    renderQuote();
     renderTabs();
     renderFeedback();
     renderBudget();
@@ -1108,11 +1309,12 @@
 
   /* ---------- reads ---------- */
   async function loadAll() {
-    const [fb, pu, vd, gl, st] = await Promise.all([
+    const [fb, pu, vd, gl, qt, st] = await Promise.all([
       sb.from("dash_feedback").select("*"),
       sb.from("dash_purchases").select("*"),
       sb.from("dash_videos").select("*"),
       sb.from("dash_goals").select("*"),
+      sb.from("dash_quotes").select("*"),
       sb.from("dash_settings").select("*").eq("key", "budget").maybeSingle(),
     ]);
     if (fb.error) { setLink("false", "Läsfel"); console.error(fb.error); return; }
@@ -1120,6 +1322,7 @@
     state.purchases = (pu.data || []).map(IN.purchases);
     state.videos = (vd.data || []).map(IN.videos);
     state.goals = (gl.data || []).map(IN.goals);
+    state.quotes = (qt.data || []).map(IN.quotes);
     state.budget = st.data ? (st.data.value.monthly || 0) : 0;
     ready = true;
     setLink("true", "Delad · live");
@@ -1235,6 +1438,21 @@
       return;
     }
 
+    const lane = e.target.closest("[data-lane]");
+    if (lane) {
+      const [id, to] = lane.dataset.lane.split(":");
+      if (!need()) return;
+      const patch = { lane: to, updated_at: new Date().toISOString() };
+      if (to === "done") { patch.done_at = new Date().toISOString(); patch.status = "Klar"; }
+      if (to === "edit") { patch.done_at = null; patch.status = "Klipps"; }
+      fail((await sb.from("dash_videos").update(patch).eq("id", id)).error);
+      await loadAll();
+      return;
+    }
+
+    const vidimg = e.target.closest("[data-vidimg]");
+    if (vidimg) { pickTarget = { kind: "video", id: vidimg.dataset.vidimg }; $("filepick").click(); return; }
+
     const goalimg = e.target.closest("[data-goalimg]");
     if (goalimg) { pickTarget = { kind: "goal", id: goalimg.dataset.goalimg }; $("filepick").click(); return; }
 
@@ -1245,10 +1463,46 @@
   /* A follower count jumps from 340 to 512; nobody steps that one press at a
      time, so the figure is typeable. */
   document.addEventListener("change", async (e) => {
+    const finalUrl = e.target.closest("[data-final]");
+    if (finalUrl) {
+      if (!need()) return;
+      fail((await sb.from("dash_videos").update({
+        final_url: finalUrl.value.trim(), updated_at: new Date().toISOString(),
+      }).eq("id", finalUrl.dataset.final)).error);
+      await loadAll();
+      return;
+    }
+
     const set = e.target.closest("[data-set]");
     if (!set || !need()) return;
     fail((await sb.from("dash_goals").update({ current: Math.max(0, +set.value || 0) }).eq("id", set.dataset.set)).error);
     await loadAll();
+  });
+
+  /* This week if this week is free, otherwise the first week after it that
+     nobody has claimed. `week` is unique in the table, so two people adding at
+     the same moment cannot both take the same slot — the loser is rejected and
+     tries the next week rather than overwriting. */
+  $("q-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = $("q-input").value.trim();
+    if (!text || !need()) return;
+
+    for (let i = 0; i < 12; i++) {
+      const week = weekPlus(i);
+      if (state.quotes.some((q) => q.week === week)) continue;
+      const { error } = await sb.from("dash_quotes").insert({ id: uid(), text, author: me || "okänd", week });
+      if (!error) {
+        $("q-input").value = "";
+        setLink("true", "Delad · live");
+        await loadAll();
+        return;
+      }
+      // 23505 is the unique violation: somebody took that week first.
+      if (error.code !== "23505") { fail(error); return; }
+      await loadAll();
+    }
+    setLink("false", "Kön är full");
   });
 
   $("bud-input").addEventListener("change", async () => {
@@ -1275,11 +1529,25 @@
     const title = $("vd-title").value.trim();
     if (!title || !need()) return;
     const { error } = await sb.from("dash_videos").insert({
-      id: uid(), title, platform: $("vd-platform").value, status: "Idé", author: me || "okänd",
+      id: uid(), title, platform: $("vd-platform").value, status: "Klipps",
+      lane: "edit", raw_url: $("vd-raw").value.trim(), edit_notes: $("vd-notes").value.trim(),
+      author: me || "okänd",
     });
     fail(error);
     if (error) return;
-    $("vd-title").value = "";
+    $("vd-title").value = ""; $("vd-raw").value = ""; $("vd-notes").value = "";
+    await loadAll();
+  });
+
+  $("id-add").addEventListener("click", async () => {
+    const title = $("id-title").value.trim();
+    if (!title || !need()) return;
+    const { error } = await sb.from("dash_videos").insert({
+      id: uid(), title, platform: "Flera", status: "Idé", lane: "idea", author: me || "okänd",
+    });
+    fail(error);
+    if (error) return;
+    $("id-title").value = "";
     await loadAll();
   });
 
@@ -1325,6 +1593,10 @@
       if (!id) continue;
       if (target.kind === "draft") draftImages.push(id);
       if (target.kind === "modal" && openVideo) openVideo.images = (openVideo.images || []).concat(id);
+      if (target.kind === "video") {
+        const v = state.videos.find((x) => x.id === target.id);
+        if (v) { await sb.from("dash_videos").update({ images: (v.images || []).concat(id) }).eq("id", v.id); await loadAll(); }
+      }
       if (target.kind === "goal") {
         const g = state.goals.find((x) => x.id === target.id);
         if (g) { await sb.from("dash_goals").update({ images: (g.images || []).concat(id) }).eq("id", g.id); await loadAll(); }
@@ -1395,6 +1667,35 @@
     await loadAll();
   });
 
+  /* ---------- the way in ----------
+     Played once the code is accepted and before the dashboard is revealed, so
+     it covers the moment the first rows are being fetched rather than adding a
+     wait of its own. A click, a key, or a system asking for less motion cuts
+     it short. */
+  function playIntro() {
+    const intro = $("intro");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    intro.hidden = false;
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        window.clearTimeout(timer);
+        document.removeEventListener("keydown", finish);
+        intro.classList.add("is-leaving");
+        window.setTimeout(() => {
+          intro.hidden = true;
+          intro.classList.remove("is-leaving");
+          resolve();
+        }, 450);
+      };
+      const timer = window.setTimeout(finish, reduced ? 1400 : 3400);
+      intro.addEventListener("click", finish, { once: true });
+      document.addEventListener("keydown", finish);
+    });
+  }
+
   /* ---------- the gate ---------- */
   const gate = $("gate");
   const msg = (text) => { $("g-msg").textContent = text; };
@@ -1417,8 +1718,10 @@
     try { localStorage.setItem(CODE_KEY, code); } catch (_) {}
     gate.hidden = true;
     setLink("pending", "Hämtar");
+    const shown = playIntro();
     await loadAll();
     subscribe();
+    await shown;
     return true;
   }
 
