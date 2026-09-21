@@ -559,25 +559,16 @@
   .intro-rule { width: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
   /* The sweep moves a gradient across the glyphs themselves, and comes to rest
      inside a gold band rather than on the pale highlight. */
-  .intro-spell { max-width: 90vw; color: var(--accent); font-family: var(--mono);
-    font-size: clamp(0.78rem, 3.4vw, 1.18rem); letter-spacing: 0.04em; overflow-wrap: anywhere;
-    background: linear-gradient(100deg, var(--accent) 0%, var(--accent) 38%, #fff6dc 50%, var(--accent) 62%, var(--accent) 100%);
-    background-size: 260% 100%; background-position: 140% 0;
-    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-  .intro-spell::before { content: "\201D"; opacity: 0.55; }
-  .intro-spell::after { content: "\201D"; opacity: 0.55; }
   .intro-go { color: var(--text); font-family: var(--display); font-size: clamp(0.82rem, 3vw, 1.05rem);
     font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
   .intro-skip { position: absolute; bottom: 26px; color: var(--muted); font-family: var(--mono);
     font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; }
-  .intro-greet, .intro-spell, .intro-go, .intro-skip { opacity: 0;
+  .intro-greet, .intro-go, .intro-skip { opacity: 0;
     animation: intro-rise 0.62s cubic-bezier(0.2,0.75,0.3,1) forwards; }
   .intro-greet { animation-delay: 0.1s; }
   .intro-rule { animation: intro-widen 0.7s cubic-bezier(0.2,0.75,0.3,1) 0.55s forwards; }
-  .intro-spell { animation: intro-rise 0.62s cubic-bezier(0.2,0.75,0.3,1) 0.85s forwards,
-    intro-sweep 1.5s ease-in-out 1.15s 1 forwards; }
-  .intro-go { animation-delay: 1.75s; }
-  .intro-skip { animation-delay: 2.3s; }
+  .intro-go { animation-delay: 0.95s; }
+  .intro-skip { animation-delay: 1.5s; }
   @keyframes intro-rise { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
   @keyframes intro-widen { from { width: 0; } to { width: min(320px, 62vw); } }
   @keyframes intro-sweep { from { background-position: 140% 0; } to { background-position: -140% 0; } }
@@ -622,9 +613,8 @@
   .vid-row input[type="text"] { flex: 1 1 240px; min-width: 0; }
 
   @media (prefers-reduced-motion: reduce) {
-    .intro-greet, .intro-spell, .intro-go, .intro-skip { opacity: 1; animation: none; }
+    .intro-greet, .intro-go, .intro-skip { opacity: 1; animation: none; }
     .intro-rule { width: min(320px, 62vw); animation: none; }
-    .intro-spell { -webkit-text-fill-color: var(--accent); }
   }
 
   /* ---------- video: drop, watch, hand over ----------
@@ -733,10 +723,9 @@
 <body>
 
 <div id="intro" class="intro" hidden aria-live="polite">
-  <p class="intro-greet">Välkommen till Studywarts Dashboard</p>
+  <p class="intro-greet">Minns målet</p>
   <span class="intro-rule"></span>
-  <p class="intro-spell">jagärskyldigtillmorotsdådet2024</p>
-  <p class="intro-go">Nu kör vi! Mata på!</p>
+  <p class="intro-go">Stay productive, broder</p>
   <span class="intro-skip">Klicka för att hoppa över</span>
 </div>
 
@@ -2028,7 +2017,7 @@
           resolve();
         }, 450);
       };
-      const timer = window.setTimeout(finish, reduced ? 1400 : 3400);
+      const timer = window.setTimeout(finish, reduced ? 1400 : 2600);
       intro.addEventListener("click", finish, { once: true });
       document.addEventListener("keydown", finish);
     });
