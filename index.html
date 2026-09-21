@@ -942,6 +942,7 @@
     </div>
   </section>
   <section id="p-stats" class="panel" role="tabpanel" aria-label="Analys" hidden>
+    <div class="notice" id="ts-stale" hidden></div>
     <div class="card">
       <h2>Senaste avläsningen</h2>
       <div class="card-body">
@@ -1535,6 +1536,7 @@
     const before = rows.length > 1 ? rows[rows.length - 2] : null;
 
     if (!now) {
+      $("ts-stale").hidden = true;
       $("ts-followers").textContent = "0";
       $("ts-when").textContent = "ingen avläsning än";
       $("ts-numbers").innerHTML = "";
@@ -1542,6 +1544,24 @@
         "<span>Siffrorna läses av i TikTok Studio och skrivs in som en daterad avläsning.</span></div>";
       $("ts-note").innerHTML = "";
       return;
+    }
+
+    /* William, dashboard feedback mu2uka7mhlbcl: "vissa siffror stämmer ej som
+       likes osv" — the numbers themselves were never wrong, they were just old:
+       a single hand-typed reading from 11 days earlier was still "the latest"
+       because nothing re-read TikTok Studio in between. The Sunday schedule
+       (see README) is the fix for that going forward; this banner is the fix
+       for the case where a Sunday run gets skipped and nobody notices — a
+       week-old reading is normal (the schedule is weekly), so the banner only
+       fires once a reading is stale enough that a run was plausibly missed. */
+    const daysOld = Math.floor((Date.now() - new Date(now.takenOn + "T00:00:00Z").getTime()) / 86400000);
+    const staleAfter = now.windowDays + 2;
+    if (daysOld > staleAfter) {
+      $("ts-stale").hidden = false;
+      $("ts-stale").textContent = "Den här avläsningen är " + daysOld + " dagar gammal — söndagsanalysen " +
+        "verkar ha missat minst en gång. Siffrorna nedan kan vara inaktuella tills nästa avläsning.";
+    } else {
+      $("ts-stale").hidden = true;
     }
 
     $("ts-followers").textContent = statNumber(now.followersTotal) + " följare";
