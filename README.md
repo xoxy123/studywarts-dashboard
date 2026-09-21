@@ -31,3 +31,28 @@ set the panel says so rather than showing a confident 0 %.
 
 Schema: `20260909210000_dashboard_tiktok_stats.sql`. The Supabase project is
 `natlrlvtbgbyypzworge`.
+
+### Why the numbers went wrong, and the Sunday schedule that reads them now
+
+The panel always renders the newest row correctly — the bug William reported
+("vissa siffror stämmer ej som likes osv") was that nothing added a newer row
+after the first one on 9 September, so "the latest reading" sat eleven days
+stale while the real account kept moving (likes alone went from 180 to 2 400
+over that stretch). The panel now shows a warning banner when the newest
+reading is older than its own window plus four days, so a missed week is
+visible on the dashboard itself instead of only in a support ticket.
+
+A local Claude Code scheduled task, `studywarts-tiktok-weekly-analysis`
+(`~/.claude/scheduled-tasks/studywarts-tiktok-weekly-analysis/SKILL.md`), fires
+every Sunday and re-reads `tiktok.com/tiktokstudio` for `@studywartsofficial`
+through Claude-in-Chrome — the same manual steps this file already described —
+then inserts a new dated row with a fresh written analysis. It needs:
+
+- the Claude Code desktop app running on William's Mac at the scheduled time
+  (a task due while the app is closed runs on next launch instead), and
+- Chrome signed in to TikTok Studio for `@studywartsofficial` when it fires.
+
+Both are outside what an agent can set up by itself. If a Sunday is missed for
+either reason, the stale-reading banner above says so on the dashboard, and
+either the next scheduled Sunday run or asking Claude Code to run the
+`studywarts-tiktok-weekly-analysis` scheduled task by hand catches it up.
