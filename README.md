@@ -56,3 +56,29 @@ Both are outside what an agent can set up by itself. If a Sunday is missed for
 either reason, the stale-reading banner above says so on the dashboard, and
 either the next scheduled Sunday run or asking Claude Code to run the
 `studywarts-tiktok-weekly-analysis` scheduled task by hand catches it up.
+
+## The Sidan section of the Analys tab
+
+Same idea as the TikTok reading, for studywarts.com itself: visitors and
+pageviews, Lovable Cloud user counts, Stripe subscriptions per plan and MRR,
+read by hand (through Claude-in-Chrome, in William's logged-in Chrome — none
+of these four sources has an MCP connector) and written into
+`dash_site_stats` as a dated snapshot, same rules as `dash_tiktok_stats`: one
+row per reading, never edited, and a number that could not be read that week
+is stored as `null` rather than guessed.
+
+Unlike the TikTok reading there are four independent sources instead of one,
+so a login wall or a disconnected browser on any single source does not block
+the others — every figure column is nullable, and `sources` records where
+each populated figure came from (or why it is null). The panel shows this
+week's numbers with % change against the previous row, a line chart each for
+users and visitors over time, a stacked bar chart of subscribers per plan,
+the conversion rate (subscribers ÷ users), and the same kind of stale-reading
+banner as the TikTok panel (newest reading older than `window_days + 2` days).
+
+Schema: `20260923100000_dashboard_site_stats.sql`. Same Supabase project,
+`natlrlvtbgbyypzworge`. Exact weekly steps — where to click, which labels to
+read, the SQL for the previous row and the insert — are documented outside
+this repo, in `routine-steps.md` next to this run's evidence
+(`~/Dev/studywarts-evidence/site-analysis/`), for William to fold into the
+same Sunday routine as the TikTok reading.
