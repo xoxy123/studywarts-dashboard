@@ -770,6 +770,7 @@
     <div class="quote-eyebrow">Veckans quote <em id="q-week"></em></div>
     <p class="quote-text" id="q-text"></p>
     <div class="quote-by" id="q-by"></div>
+    <div><button class="btn-ghost" type="button" id="q-skip" hidden>Hoppa över den här veckans</button></div>
     <form class="quote-form" id="q-form">
       <input type="text" id="q-input" maxlength="240" placeholder="Lägg in en quote">
       <button class="btn" data-primary type="submit" id="q-add">Lägg in</button>
@@ -1515,10 +1516,42 @@
     }).join("");
   }
 
+  /* Everything waiting after this week, in order. A row parked on a
+     placeholder week by an interrupted reorder still counts, at the back, so it
+     is never lost — the next reorder gives it a real week again. */
+  const isWeekKey = (w) => /^\d{4}-W\d{2}$/.test(w || "");
+  function quoteQueue(now) {
+    const real = state.quotes.filter((q) => isWeekKey(q.week) && q.week > now)
+      .sort((a, b) => a.week.localeCompare(b.week));
+    const parked = state.quotes.filter((q) => !isWeekKey(q.week));
+    return real.concat(parked);
+  }
+
+  /* Give `ordered` consecutive weeks from this one. `week` is unique in the
+     table, so a straight swap would collide half-way through: every row that
+     moves is first parked on its own placeholder, and only then given its
+     final week. */
+  async function reorderQuotes(ordered) {
+    const moves = ordered
+      .map((q, i) => ({ q, week: weekPlus(i) }))
+      .filter((m) => m.q.week !== m.week);
+    for (const m of moves) {
+      const { error } = await sb.from("dash_quotes").update({ week: "tmp-" + m.q.id }).eq("id", m.q.id);
+      if (error) { fail(error); return; }
+    }
+    for (const m of moves) {
+      const { error } = await sb.from("dash_quotes").update({ week: m.week }).eq("id", m.q.id);
+      if (error) { fail(error); return; }
+    }
+  }
+
   function renderQuote() {
     const now = isoWeek(new Date());
     const current = state.quotes.find((q) => q.week === now);
-    const ahead = state.quotes.filter((q) => q.week > now).sort((a, b) => a.week.localeCompare(b.week));
+    const ahead = quoteQueue(now);
+    $("q-skip").hidden = !current;
+    $("q-skip").textContent = "Hoppa över den här veckans";
+    $("q-skip").dataset.armed = "";
 
     $("q-week").textContent = current ? weekLabel(current.week) : "";
     if (current) {
@@ -1534,9 +1567,10 @@
       ? "Lägg in en quote — hamnar i kö för " + weekLabel(weekPlus(1))
       : "Lägg in veckans quote";
 
-    $("q-queue").innerHTML = ahead.map((q) =>
+    $("q-queue").innerHTML = ahead.map((q, idx) =>
       "<li><b>" + esc(weekLabel(q.week)) + "</b><span>" + esc(q.text) + "</span>" +
       (q.author ? '<span class="quote-by" style="flex:0">— ' + esc(q.author) + "</span>" : "") +
+      (idx > 0 ? '<button class="btn-ghost" type="button" data-prio="' + q.id + '">Prioritera</button>' : "") +
       '<button class="btn-ghost" type="button" data-del="quotes:' + q.id + '">Ta bort</button></li>').join("");
   }
 
@@ -1979,6 +2013,45 @@
      nobody has claimed. `week` is unique in the table, so two people adding at
      the same moment cannot both take the same slot — the loser is rejected and
      tries the next week rather than overwriting. */
+  /* Skipping throws this week's quote away and pulls the whole queue one week
+     forward, so it asks twice: the first press arms it for three seconds. */
+  $("q-skip").addEventListener("click", async () => {
+    const btn = $("q-skip");
+    if (!btn.dataset.armed) {
+      btn.dataset.armed = "1";
+      btn.textContent = "Säker? Tryck igen för att hoppa över";
+      window.setTimeout(() => {
+        if (btn.dataset.armed) { btn.dataset.armed = ""; btn.textContent = "Hoppa över den här veckans"; }
+      }, 3000);
+      return;
+    }
+    btn.dataset.armed = "";
+    if (!need()) return;
+    const now = isoWeek(new Date());
+    const current = state.quotes.find((q) => q.week === now);
+    if (!current) return;
+    const { error } = await sb.from("dash_quotes").delete().eq("id", current.id);
+    if (error) { fail(error); return; }
+    await reorderQuotes(quoteQueue(now));
+    await loadAll();
+  });
+
+  /* Prioritising puts a queued quote next in line — straight after this week's,
+     or as this week's if there is none. Combined with a skip, that is how a
+     quote is made this week's quote now. */
+  document.addEventListener("click", async (e) => {
+    const prio = e.target.closest("[data-prio]");
+    if (!prio || !need()) return;
+    const now = isoWeek(new Date());
+    const current = state.quotes.find((q) => q.week === now);
+    const queue = quoteQueue(now);
+    const picked = queue.find((q) => q.id === prio.dataset.prio);
+    if (!picked) return;
+    const rest = queue.filter((q) => q.id !== picked.id);
+    await reorderQuotes(current ? [current, picked, ...rest] : [picked, ...rest]);
+    await loadAll();
+  });
+
   $("q-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const text = $("q-input").value.trim();
