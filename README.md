@@ -82,3 +82,32 @@ read, the SQL for the previous row and the insert — are documented outside
 this repo, in `routine-steps.md` next to this run's evidence
 (`~/Dev/studywarts-evidence/site-analysis/`), for William to fold into the
 same Sunday routine as the TikTok reading.
+
+## The Instruktioner tab
+
+Instructions for Codex, pasted in, tracked to done, and the decisions taken
+along the way. Tables `dash_instruktioner` and `dash_beslut`, same code-header
+policy as every other table; SQL in
+`docs/dashboard-migrationer/001-instruktioner.sql`.
+
+Import format: each part starts at a line `# Del <nummer>: <titel>` (one `#`;
+the number is everything before the first colon, so `142b` works) and ends at
+the next `# Del` line or at a line that is only `---`. Text before the first
+`# Del`, and anything after a part closed by `---`, is ignored. The `- ` lines
+under a heading `Kontroll när det är klart` become the checkpoints; the whole
+block is stored as-is and is what "Kopiera till Codex" copies.
+
+```
+# Del 150: Flaggorna
+Vad som ska göras …
+
+Kontroll när det är klart
+- Första punkten
+- Andra punkten
+---
+Frågor och tankar (följer inte med)
+```
+
+Besides the realtime channel the tab re-reads its two tables every 15 s, and
+a change made without a connection waits in this browser and is sent when the
+connection is back (the header says "Kopplar upp" meanwhile).

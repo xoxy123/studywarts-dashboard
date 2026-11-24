@@ -717,6 +717,141 @@
     cursor: pointer;
   }
   .lightbox-close:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ---------- instruktioner ----------
+     Phone first. Every control in this tab is at least 44 px tall and every
+     text field is 16 px, because iOS zooms into anything smaller the moment it
+     gets focus. Long unbroken strings (paths, URLs) wrap instead of pushing
+     the page sideways. */
+
+  #p-instr { min-width: 0; }
+  #p-instr .card { min-width: 0; overflow-wrap: anywhere; }
+  #p-instr input[type="text"], #p-instr input[type="search"], #p-instr textarea { font-size: 16px; min-height: 44px; }
+  #p-instr .btn, #p-instr .btn-ghost, #p-instr .chip { min-height: 44px; }
+  #p-instr .chip { padding: 8px 14px; font-size: 0.85rem; }
+  #p-instr .btn-ghost { padding: 8px 12px; font-size: 0.85rem; }
+  .in-paste { min-height: 220px; font-family: var(--mono); line-height: 1.5; }
+  .in-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .in-row > input { flex: 1 1 200px; min-width: 0; }
+  .in-msg { margin: 0; font-size: 0.9rem; }
+  .in-msg[data-kind="error"] { color: var(--fixed); }
+  .in-msg[data-kind="ok"] { color: var(--accent); }
+  .in-msg:empty { display: none; }
+
+  .in-preview { display: grid; gap: 8px; }
+  .in-pv {
+    display: grid;
+    gap: 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    background: var(--surface-2);
+  }
+  .in-pv-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+  .in-pv-num { color: var(--accent-hi); font-family: var(--display); font-weight: 600; letter-spacing: 0.06em; }
+  .in-pv-meta { color: var(--muted); font-family: var(--mono); font-size: 0.7rem; }
+  .in-pv-dupe { color: var(--warn); font-size: 0.85rem; }
+
+  .in-list { display: grid; }
+  .in-card { border-top: 1px solid var(--line-soft); }
+  .in-card:first-child { border-top: 0; }
+  .in-card[data-open="true"] { background: var(--surface-2); }
+  .in-hit {
+    display: grid;
+    gap: 6px;
+    width: 100%;
+    min-height: 44px;
+    border: 0;
+    padding: 14px 16px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .in-hit:hover .in-title { color: var(--accent-hi); }
+  .in-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+  .in-num { color: var(--accent-hi); font-family: var(--display); font-size: 0.9rem; font-weight: 700; letter-spacing: 0.06em; }
+  .in-title { flex: 1 1 160px; min-width: 0; font-size: 1rem; font-weight: 600; }
+  .in-new { color: var(--accent); font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .in-progress { color: var(--muted); font-family: var(--mono); font-size: 0.72rem; }
+  .in-snippet {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+    white-space: pre-line;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Status: the word is always printed; the colour only repeats it. */
+  .in-badge {
+    display: inline-block;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .in-badge[data-s="ny"] { background: #e9dcbc; color: #2a1f10; }
+  .in-badge[data-s="skickad"] { background: #24476b; color: #e6f0fb; }
+  .in-badge[data-s="klar"] { background: #e2c24a; color: #2a1f05; }
+  .in-badge[data-s="kontrollerad"] { background: #2f6b3c; color: #e8f6ea; }
+
+  .in-body { display: grid; gap: 14px; padding: 0 16px 18px; }
+  .in-copy { width: 100%; min-height: 52px !important; font-size: 0.82rem !important; }
+  .in-label { color: var(--muted); font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .in-status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  @media (min-width: 560px) { .in-status { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .in-status .chip { width: 100%; border-radius: var(--radius); }
+  .in-checks { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+  .in-checks label {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    min-height: 44px;
+    padding: 10px 4px;
+    cursor: pointer;
+  }
+  .in-checks input { flex: none; width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--accent); }
+  .in-checks [data-klar="true"] span { color: var(--muted); text-decoration: line-through; }
+  .in-suggest {
+    display: grid;
+    gap: 8px;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 12px;
+    background: var(--accent-soft);
+  }
+  .in-full {
+    margin: 0;
+    max-height: 60vh;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px;
+    background: var(--ground-2);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .in-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .in-who { color: var(--muted); font-family: var(--mono); font-size: 0.7rem; }
+  .in-edit { display: grid; gap: 10px; }
+  .in-edit textarea { min-height: 260px; font-family: var(--mono); }
+
+  .bs-row { display: grid; gap: 4px; border-top: 1px solid var(--line-soft); padding: 12px 16px; }
+  .bs-row:first-child { border-top: 0; }
+  .bs-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; color: var(--muted); font-family: var(--mono); font-size: 0.7rem; }
+  .bs-text { margin: 0; white-space: pre-wrap; }
 </style>
 
 </head>
@@ -897,6 +1032,51 @@
         </div>
       </div>
       <div id="vd-ideas"></div>
+    </div>
+  </section>
+
+  <!-- INSTRUKTIONER -->
+  <section id="p-instr" class="panel" role="tabpanel" aria-label="Instruktioner" hidden>
+    <div class="notice" id="in-notice" role="status" hidden></div>
+    <div class="notice" id="in-error" role="alert" hidden></div>
+
+    <div class="card">
+      <h2>Importera</h2>
+      <div class="card-body">
+        <label class="field"><span>Klistra in instruktioner</span>
+          <textarea id="in-paste" class="in-paste" rows="8" spellcheck="false"
+                    placeholder="# Del 150: Titel&#10;…&#10;Kontroll när det är klart&#10;- första punkten&#10;- andra punkten"></textarea>
+        </label>
+        <div class="in-row"><button class="btn" data-primary id="in-read" type="button">Läs in</button></div>
+        <p class="in-msg" id="in-read-msg" role="status"></p>
+        <div class="in-preview" id="in-preview"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Lista</h2>
+      <div class="card-body" style="border-bottom:1px solid var(--line-soft)">
+        <input type="search" id="in-search" placeholder="Sök nummer eller titel" aria-label="Sök nummer eller titel">
+        <div class="chips" id="in-filter"></div>
+      </div>
+      <div class="in-list" id="in-list"></div>
+      <div class="card-body" style="border-top:1px solid var(--line-soft)">
+        <div class="in-row"><button class="btn" id="in-export" type="button">Exportera alla som .md</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Beslut</h2>
+      <div class="card-body">
+        <input type="text" id="bs-text" maxlength="500" placeholder="Vad har ni bestämt?" aria-label="Vad har ni bestämt?">
+        <div class="in-row">
+          <input type="text" id="bs-del" maxlength="20" placeholder="Kopplad Del, valfritt" aria-label="Kopplad Del, valfritt">
+          <button class="btn" data-primary id="bs-add" type="button">Lägg till</button>
+        </div>
+        <p class="in-msg" id="bs-msg" role="status"></p>
+        <input type="search" id="bs-search" placeholder="Sök bland besluten" aria-label="Sök bland besluten">
+      </div>
+      <div id="bs-list"></div>
     </div>
   </section>
 
@@ -1247,7 +1427,7 @@
 
   /* ---------- tabs ---------- */
   const TABS = [["feedback", "Feedback"], ["budget", "Budget"], ["video", "Video & manus"],
-    ["goals", "Mål"], ["stats", "Analys"]];
+    ["instr", "Instruktioner"], ["goals", "Mål"], ["stats", "Analys"]];
   let tab = "feedback";
   function renderTabs() {
     const counts = {
@@ -1255,6 +1435,7 @@
       budget: state.purchases.length,
       video: state.videos.length,
       goals: state.goals.filter((g) => !goalDone(g)).length,
+      instr: instr.items.filter((d) => d.status !== "kontrollerad").length,
     };
     $("tabs").innerHTML = TABS.map(([id, label]) =>
       '<button role="tab" data-tab="' + id + '" aria-selected="' + (tab === id) + '">' + label +
@@ -1865,7 +2046,9 @@
   function subscribe() {
     sb.channel("dash")
       .on("postgres_changes", { event: "*", schema: "public" }, (payload) => {
-        if (String(payload.table || "").startsWith("dash_")) loadAll();
+        const t = String(payload.table || "");
+        if (t === "dash_instruktioner" || t === "dash_beslut") loadInstr();
+        else if (t.startsWith("dash_")) loadAll();
       })
       .subscribe();
   }
@@ -2258,6 +2441,641 @@
     await loadAll();
   });
 
+  /* ---------- instruktioner ----------
+     The "Del" instructions handed to Codex, and the decisions taken on the
+     way. Kept to its own two tables (dash_instruktioner, dash_beslut) and its
+     own load, so nothing here can stop the other tabs from loading.
+
+     Every piece of pasted or typed text is rendered through esc() or
+     textContent, never as HTML, so nothing in an instruction can run. */
+  const IN_STATUSES = [["ny", "Ny"], ["skickad", "Skickad"], ["klar", "Klar"], ["kontrollerad", "Kontrollerad"]];
+  const IN_STATUS_LABEL = Object.fromEntries(IN_STATUSES);
+  const OUTBOX_KEY = "sw-dash-instr-outbox";
+  const instr = {
+    items: [], beslut: [], loaded: false, missing: false,
+    openId: null, filter: "all", search: "", bsSearch: "",
+    preview: null, justSaved: new Set(), editing: null,
+    copied: null, offerSent: new Set(), pendingRender: false, sig: "",
+  };
+  let outbox = [];
+  try { outbox = JSON.parse(localStorage.getItem(OUTBOX_KEY) || "[]") || []; } catch (_) { outbox = []; }
+  const saveOutbox = () => { try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(outbox)); } catch (_) {} };
+  const newId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() :
+    "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+      (c ^ (Math.random() * 16) >> (c / 4)).toString(16));
+  const localDate = () => new Date().toLocaleDateString("sv-SE");
+  const when = (iso) => iso ? new Intl.DateTimeFormat("sv-SE",
+    { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(iso)) : "";
+
+  /* ---- the import format ----
+     A block starts at a line "# Del <nummer>: <titel>" (one #, nothing else
+     counts) and ends at the next such line or at a line that is only "---".
+     Anything before the first block, and anything after a block closed by
+     "---", is ignored. The whole block is kept as the text; the "- " lines
+     under "Kontroll när det är klart" become the checkpoints. */
+  const DEL_HEAD = /^\s*#[ \t]*Del[ \t]+(.+?)\s*$/;
+  const CHECK_HEAD = /^kontroll när det är klart$/i;
+
+  function splitHead(rest) {
+    const i = rest.indexOf(":");
+    if (i >= 0) return { nummer: rest.slice(0, i).trim(), titel: rest.slice(i + 1).trim() };
+    const nummer = rest.split(/\s+/)[0];
+    return { nummer, titel: rest.slice(nummer.length).trim().replace(/^[-–—]\s*/, "") };
+  }
+
+  function parseChecks(lines) {
+    const pts = [];
+    let inside = false;
+    for (const line of lines) {
+      const t = line.trim();
+      const bare = t.replace(/^#+\s*/, "").replace(/^\*\*/, "").replace(/:$/, "")
+        .replace(/\*\*$/, "").replace(/:$/, "").trim();
+      if (CHECK_HEAD.test(bare)) { inside = true; continue; }
+      if (!inside || !t) continue;
+      const m = t.match(/^(?:[-*•]|\d+[.)])\s+(?:\[[ xX]\]\s+)?(.*)$/);
+      if (m) { if (m[1].trim()) pts.push({ text: m[1].trim(), klar: false }); continue; }
+      if (/^\s/.test(line) && pts.length) { pts[pts.length - 1].text += " " + t; continue; }
+      inside = false;
+    }
+    return pts;
+  }
+
+  function parseInstructions(raw) {
+    const lines = String(raw || "").replace(/\r\n?/g, "\n").split("\n");
+    const out = [];
+    let cur = null;
+    const close = () => {
+      if (!cur) return;
+      while (cur.lines.length && !cur.lines[cur.lines.length - 1].trim()) cur.lines.pop();
+      out.push({ nummer: cur.nummer, titel: cur.titel, text: cur.lines.join("\n"),
+        kontrollpunkter: parseChecks(cur.lines) });
+      cur = null;
+    };
+    for (const line of lines) {
+      const m = line.match(DEL_HEAD);
+      if (m) { close(); cur = Object.assign(splitHead(m[1]), { lines: [line] }); continue; }
+      if (line.trim() === "---") { close(); continue; }
+      if (cur) cur.lines.push(line);
+    }
+    close();
+    return out.filter((d) => d.nummer);
+  }
+
+  /* A checkpoint that survives an edit or a replace (same wording) keeps its tick. */
+  function keepTicks(next, prev) {
+    const done = new Set((prev || []).filter((p) => p.klar).map((p) => p.text));
+    return next.map((p) => ({ text: p.text, klar: done.has(p.text) }));
+  }
+
+  /* "150" before "142b" before "142": the number first, then the letter. */
+  function numKey(n) {
+    const m = String(n || "").match(/^(\d+)(.*)$/);
+    return m ? [+m[1], m[2].toLowerCase()] : [-1, String(n || "").toLowerCase()];
+  }
+  function byNumDesc(a, b) {
+    const x = numKey(a.nummer), y = numKey(b.nummer);
+    if (x[0] !== y[0]) return y[0] - x[0];
+    if (x[1] !== y[1]) return y[1].localeCompare(x[1], "sv");
+    return (b.skapad || "").localeCompare(a.skapad || "");
+  }
+
+  const normInstr = (r) => ({
+    id: r.id, nummer: r.nummer || "", titel: r.titel || "", text: r.text || "",
+    status: IN_STATUS_LABEL[r.status] ? r.status : "ny",
+    kontrollpunkter: Array.isArray(r.kontrollpunkter) ? r.kontrollpunkter : [],
+    rapport: r.rapport || "", skapad_av: r.skapad_av || "", skapad: r.skapad, uppdaterad: r.uppdaterad,
+  });
+
+  /* ---- writes ----
+     Every write in this tab goes through write(). One that cannot reach the
+     database (no connection) is not dropped: it waits in an outbox kept in
+     this browser, the header says "Kopplar upp", the tab says how many
+     changes are waiting, and they are sent in order once the connection is
+     back. A write the database REFUSES is not retried; it is shown. */
+  function runOp(op) {
+    if (op.kind === "insert") return sb.from(op.table).insert(op.row);
+    if (op.kind === "update") return sb.from(op.table).update(op.patch).eq("id", op.id);
+    if (op.kind === "delete") return sb.from(op.table).delete().eq("id", op.id);
+    return sb.rpc(op.fn, op.args);
+  }
+  const isNetwork = (res) => !navigator.onLine || (res && res.status === 0) ||
+    /failed to fetch|networkerror|load failed|network/i.test((res && res.error && res.error.message) || "");
+  const okRes = (res) => !res.error || res.error.code === "23505"; // a retried insert that already landed
+
+  function showError(text) {
+    const n = $("in-error");
+    n.textContent = text || "";
+    n.hidden = !text;
+  }
+
+  function showInstrState() {
+    const n = $("in-notice");
+    let text = "";
+    if (instr.missing) {
+      text = "Tabellerna för Instruktioner finns inte i databasen än. SQL:en ligger i " +
+        "docs/dashboard-migrationer/001-instruktioner.sql och körs först när William har godkänt den. " +
+        "Inget kan sparas här innan dess.";
+    } else if (outbox.length) {
+      text = outbox.length + (outbox.length === 1 ? " ändring är" : " ändringar är") +
+        " inte sparade än, eftersom sidan inte når databasen. De ligger kvar i den här webbläsaren " +
+        "och sparas automatiskt när uppkopplingen är tillbaka.";
+    } else if (!navigator.onLine) {
+      text = "Ingen uppkoppling. Det du skriver nu sparas först när uppkopplingen är tillbaka.";
+    }
+    n.textContent = text;
+    n.hidden = !text;
+    if (outbox.length || !navigator.onLine) setLink("pending", "Kopplar upp");
+    else if (ready) setLink("true", "Delad · live");
+  }
+
+  let flushing = false;
+  let flushTimer = null;
+  const scheduleFlush = () => { window.clearTimeout(flushTimer); flushTimer = window.setTimeout(flushOutbox, 8000); };
+
+  async function flushOutbox() {
+    if (flushing || !sb || !outbox.length) return;
+    flushing = true;
+    try {
+      while (outbox.length) {
+        const res = await runOp(outbox[0]);
+        if (!okRes(res)) {
+          if (isNetwork(res)) { scheduleFlush(); break; }
+          console.error(res.error);
+          showError("En ändring som väntade på uppkopplingen sparades inte: " + (res.error.message || "okänt fel"));
+        }
+        outbox.shift();
+        saveOutbox();
+      }
+    } finally { flushing = false; }
+    showInstrState();
+    if (!outbox.length) { instr.sig = ""; await loadInstr(); }
+  }
+  window.addEventListener("online", () => { showInstrState(); flushOutbox(); loadInstr(); });
+  window.addEventListener("offline", showInstrState);
+
+  async function write(op, applyLocal, reload = true) {
+    if (!sb) return false;
+    if (instr.missing) { showInstrState(); return false; }
+    if (applyLocal) { applyLocal(); instr.sig = ""; }
+    if (outbox.length || !navigator.onLine) {
+      outbox.push(op); saveOutbox(); showInstrState(); scheduleFlush(); renderInstr();
+      return true;
+    }
+    const res = await runOp(op);
+    if (okRes(res)) { showError(""); if (reload) await loadInstr(); return true; }
+    if (isNetwork(res)) {
+      outbox.push(op); saveOutbox(); showInstrState(); scheduleFlush(); renderInstr();
+      return true;
+    }
+    console.error(res.error);
+    showError("Sparades inte: " + (res.error.message || "okänt fel"));
+    instr.sig = "";
+    await loadInstr();
+    return false;
+  }
+
+  /* ---- reads ---- */
+  async function loadInstr() {
+    if (!sb || outbox.length) return;
+    const settled = await Promise.allSettled([
+      sb.from("dash_instruktioner").select("*"),
+      sb.from("dash_beslut").select("*"),
+    ]);
+    const [ra, rb] = settled.map((s) => s.status === "fulfilled" ? s.value
+      : { error: { message: String(s.reason) }, status: 0 });
+    instr.missing = [ra, rb].some((r) => r.error && (r.error.code === "PGRST205" || r.status === 404));
+    if (ra.error || rb.error) {
+      if (!instr.missing) console.error(ra.error || rb.error);
+      showInstrState();
+      renderInstr();
+      return;
+    }
+    instr.loaded = true;
+    showInstrState();
+    const sig = JSON.stringify([ra.data, rb.data]);
+    if (sig === instr.sig) return;
+    instr.sig = sig;
+    instr.items = (ra.data || []).map(normInstr);
+    instr.beslut = rb.data || [];
+    renderTabs();
+    renderInstr();
+  }
+
+  /* The other tabs update through the realtime channel. This tab does too,
+     and also re-reads its own two tables every 15 s while the page is in
+     front, so a tick or a report from the other person shows up even if the
+     realtime connection is not delivering. A re-read that finds nothing new
+     renders nothing, so it never disturbs typing. */
+  window.setInterval(() => {
+    if (!sb || document.visibilityState !== "visible") return;
+    if (outbox.length) flushOutbox(); else loadInstr();
+  }, 15000);
+  document.addEventListener("visibilitychange", () => {
+    if (sb && document.visibilityState === "visible") loadInstr();
+  });
+
+  /* ---- rendering ---- */
+  const badge = (s) => '<span class="in-badge" data-s="' + s + '">' + IN_STATUS_LABEL[s] + "</span>";
+
+  function snippet(text) {
+    const lines = String(text || "").split("\n").slice(1).map((l) => l.trim()).filter(Boolean).slice(0, 3);
+    const s = lines.join("\n");
+    return s.length > 280 ? s.slice(0, 280) + "…" : s;
+  }
+
+  function instrBody(d) {
+    if (instr.editing && instr.editing.id === d.id) {
+      const e = instr.editing;
+      return '<div class="in-body in-edit">' +
+        '<label class="field"><span>Nummer</span><input type="text" data-in-edit-field="nummer" value="' + esc(e.nummer) + '"></label>' +
+        '<label class="field"><span>Titel</span><input type="text" data-in-edit-field="titel" value="' + esc(e.titel) + '"></label>' +
+        '<label class="field"><span>Text</span><textarea data-in-edit-field="text" id="in-edit-text"></textarea></label>' +
+        '<div class="in-foot"><button class="btn" data-primary type="button" data-in-save="' + d.id + '">Spara</button>' +
+        '<button class="btn" type="button" data-in-cancel="1">Avbryt</button></div></div>';
+    }
+    const pts = d.kontrollpunkter;
+    const allDone = pts.length > 0 && pts.every((p) => p.klar);
+    return '<div class="in-body">' +
+      '<button class="btn in-copy" data-primary type="button" data-in-copy="' + d.id + '">' +
+        (instr.copied === d.id ? "Kopierat" : "Kopiera till Codex") + "</button>" +
+      (instr.offerSent.has(d.id) && d.status === "ny"
+        ? '<button class="btn" type="button" data-in-status="' + d.id + ':skickad">Markera som skickad</button>' : "") +
+      (allDone && d.status === "klar"
+        ? '<div class="in-suggest"><span>Alla kontrollpunkter är klara.</span>' +
+          '<button class="btn" type="button" data-in-status="' + d.id + ':kontrollerad">Markera som kontrollerad</button></div>' : "") +
+      '<div><div class="in-label">Status</div><div class="in-status">' +
+        IN_STATUSES.map(([s, l]) => '<button class="chip" type="button" aria-pressed="' + (d.status === s) +
+          '" data-in-status="' + d.id + ":" + s + '">' + l + "</button>").join("") + "</div></div>" +
+      '<div><div class="in-label">Kontrollpunkter</div>' +
+        (pts.length
+          ? '<ul class="in-checks">' + pts.map((p, i) => '<li data-klar="' + !!p.klar + '"><label>' +
+              '<input type="checkbox" data-in-check="' + d.id + ":" + i + '"' + (p.klar ? " checked" : "") + ">" +
+              "<span>" + esc(p.text) + "</span></label></li>").join("") + "</ul>"
+          : '<p class="in-msg">Inga rader med - under "Kontroll när det är klart".</p>') + "</div>" +
+      '<label class="field"><span>Rapport från Codex</span>' +
+        '<textarea rows="4" data-in-rapport="' + d.id + '" placeholder="Klistra in Codex svar. Sparas när du lämnar fältet.">' +
+        esc(d.rapport) + "</textarea></label>" +
+      '<div><div class="in-label">Hela instruktionen</div><pre class="in-full" data-in-full="' + d.id + '"></pre></div>' +
+      '<div class="in-foot"><button class="btn" type="button" data-in-edit="' + d.id + '">Redigera</button>' +
+        '<button class="btn-ghost" type="button" data-in-del="' + d.id + '">Ta bort</button></div>' +
+      '<div class="in-who">Inlagd av ' + esc(d.skapad_av || "okänd") + " · " + when(d.skapad) + "</div>" +
+      "</div>";
+  }
+
+  function instrCard(d) {
+    const pts = d.kontrollpunkter;
+    const done = pts.filter((p) => p.klar).length;
+    const open = instr.openId === d.id;
+    return '<article class="in-card" data-open="' + open + '">' +
+      '<button class="in-hit" type="button" data-in-open="' + d.id + '" aria-expanded="' + open + '">' +
+        '<span class="in-top"><span class="in-num">Del ' + esc(d.nummer) + "</span>" +
+          '<span class="in-title">' + esc(d.titel || "(utan titel)") + "</span>" + badge(d.status) + "</span>" +
+        '<span class="in-progress">' + done + " av " + pts.length + " kontrollpunkter klara" +
+          (instr.justSaved.has(d.id) ? ' · <span class="in-new">nyss inläst</span>' : "") + "</span>" +
+        (open ? "" : '<span class="in-snippet">' + esc(snippet(d.text)) + "</span>") +
+      "</button>" + (open ? instrBody(d) : "") + "</article>";
+  }
+
+  function renderPreview() {
+    const pv = instr.preview;
+    if (!pv) { $("in-preview").innerHTML = ""; return; }
+    const undecided = pv.filter((p) => p.dupeOf && !p.choice).length;
+    $("in-preview").innerHTML =
+      '<div class="in-label">Hittade ' + pv.length + (pv.length === 1 ? " Del" : " Delar") + "</div>" +
+      pv.map((p, i) => '<div class="in-pv"><div class="in-pv-head">' +
+        '<span class="in-pv-num">Del ' + esc(p.nummer) + "</span><span>" + esc(p.titel || "(utan titel)") + "</span>" +
+        '<span class="in-pv-meta">' + p.kontrollpunkter.length + " kontrollpunkter</span></div>" +
+        (p.dupeOf
+          ? '<div class="in-pv-dupe">Del ' + esc(p.nummer) + " finns redan. Vad ska hända?</div>" +
+            '<div class="chips">' + [["replace", "Ersätt"], ["both", "Behåll båda"], ["skip", "Hoppa över"]].map(([c, l]) =>
+              '<button class="chip" type="button" data-pv-choice="' + i + ":" + c + '" aria-pressed="' + (p.choice === c) + '">' +
+              l + "</button>").join("") + "</div>"
+          : "") +
+        "</div>").join("") +
+      (undecided ? '<p class="in-msg" data-kind="error">Välj Ersätt, Behåll båda eller Hoppa över för ' +
+        (undecided === 1 ? "dubbletten" : "alla " + undecided + " dubbletter") + " först.</p>" : "") +
+      '<div class="in-row"><button class="btn" data-primary type="button" id="in-save-all"' + (undecided ? " disabled" : "") +
+        ">Spara alla</button>" +
+      '<button class="btn" type="button" id="in-cancel-pv">Avbryt</button></div>';
+  }
+
+  function renderBeslut() {
+    const q = instr.bsSearch.trim().toLowerCase();
+    const rows = instr.beslut
+      .filter((b) => !q || [b.text, b.kopplad_del, b.skapad_av].some((v) => String(v || "").toLowerCase().includes(q)))
+      .sort((a, b) => (b.datum || "").localeCompare(a.datum || "") || (b.skapad || "").localeCompare(a.skapad || ""));
+    const mine = (b) => (b.skapad_av || "").trim().toLowerCase() === (me || "").trim().toLowerCase() && !!me;
+    $("bs-list").innerHTML = !rows.length
+      ? '<div class="empty"><strong>' + (q ? "Inget beslut matchar" : "Inga beslut än") + "</strong></div>"
+      : rows.map((b) => '<div class="bs-row"><div class="bs-meta"><span>' + esc(b.datum || "") + "</span>" +
+          (b.kopplad_del ? '<span class="tag">Del ' + esc(b.kopplad_del) + "</span>" : "") +
+          "<span>" + esc(b.skapad_av || "okänd") + "</span>" +
+          (mine(b) ? '<button class="btn-ghost" type="button" data-bs-del="' + b.id + '" style="margin-left:auto">Ta bort</button>' : "") +
+          '</div><p class="bs-text">' + esc(b.text) + "</p></div>").join("");
+  }
+
+  function renderInstr() {
+    renderPreview();
+    renderBeslut();
+    $("in-export").disabled = !instr.items.length;
+
+    const counts = { all: instr.items.length };
+    IN_STATUSES.forEach(([s]) => { counts[s] = instr.items.filter((d) => d.status === s).length; });
+    $("in-filter").innerHTML = [["all", "Alla"]].concat(IN_STATUSES).map(([s, l]) =>
+      '<button class="chip" type="button" data-in-filter="' + s + '" aria-pressed="' + (instr.filter === s) + '">' +
+      l + " <small>" + counts[s] + "</small></button>").join("");
+
+    /* Typing in the open card (a report, an edit) must not be wiped by a
+       live update; the list redraws as soon as that field loses focus. */
+    const list = $("in-list");
+    const act = document.activeElement;
+    if (act && list.contains(act) && /^(INPUT|TEXTAREA)$/.test(act.tagName) && act.type !== "checkbox") {
+      instr.pendingRender = true;
+      return;
+    }
+    instr.pendingRender = false;
+
+    const q = instr.search.trim().toLowerCase();
+    const rows = instr.items
+      .filter((d) => instr.filter === "all" || d.status === instr.filter)
+      .filter((d) => !q || d.nummer.toLowerCase().includes(q) || d.titel.toLowerCase().includes(q)
+        || ("del " + d.nummer).toLowerCase().includes(q))
+      .sort((a, b) => {
+        const an = instr.justSaved.has(a.id), bn = instr.justSaved.has(b.id);
+        if (an !== bn) return an ? -1 : 1;
+        return byNumDesc(a, b);
+      });
+
+    if (!rows.length) {
+      list.innerHTML = '<div class="empty"><strong>' +
+        (instr.items.length ? "Inget matchar" : "Inga Delar än") + "</strong><span>" +
+        (instr.items.length ? "Ändra sökningen eller filtret." : "Klistra in instruktioner ovanför och tryck Läs in.") +
+        "</span></div>";
+      return;
+    }
+    list.innerHTML = rows.map(instrCard).join("");
+    const full = list.querySelector("[data-in-full]");
+    if (full) {
+      const d = instr.items.find((x) => x.id === full.dataset.inFull);
+      full.textContent = d ? d.text : "";
+    }
+    const et = $("in-edit-text");
+    if (et && instr.editing) et.value = instr.editing.text;
+  }
+  $("in-list").addEventListener("focusout", () => {
+    window.setTimeout(() => { if (instr.pendingRender) renderInstr(); }, 0);
+  });
+
+  /* ---- import ---- */
+  $("in-read").addEventListener("click", () => {
+    const found = parseInstructions($("in-paste").value);
+    const m = $("in-read-msg");
+    if (!found.length) {
+      instr.preview = null;
+      m.dataset.kind = "error";
+      m.textContent = "Hittade ingen rubrik som börjar med # Del";
+      renderPreview();
+      return;
+    }
+    m.textContent = "";
+    instr.preview = found.map((p) => {
+      const dupes = instr.items.filter((d) => d.nummer.toLowerCase() === p.nummer.toLowerCase())
+        .sort((a, b) => (b.skapad || "").localeCompare(a.skapad || ""));
+      return Object.assign(p, { dupeOf: dupes[0] || null, choice: dupes[0] ? null : "new" });
+    });
+    renderPreview();
+  });
+
+  $("in-preview").addEventListener("click", async (e) => {
+    const c = e.target.closest("[data-pv-choice]");
+    if (c) {
+      const [i, choice] = c.dataset.pvChoice.split(":");
+      if (instr.preview && instr.preview[+i]) instr.preview[+i].choice = choice;
+      renderPreview();
+      return;
+    }
+    if (e.target.closest("#in-cancel-pv")) { instr.preview = null; renderPreview(); return; }
+    if (!e.target.closest("#in-save-all") || !instr.preview) return;
+    const pv = instr.preview;
+    if (pv.some((p) => p.dupeOf && !p.choice)) return;
+    const btn = $("in-save-all");
+    btn.disabled = true;
+    const savedIds = [];
+    const inserts = [];
+    let ok = true;
+    for (const p of pv) {
+      if (p.choice === "skip") continue;
+      if (p.choice === "replace") {
+        /* Replace keeps the status and the report; ticks carry over for
+           checkpoints whose wording did not change. */
+        const old = p.dupeOf;
+        const patch = { nummer: p.nummer, titel: p.titel, text: p.text,
+          kontrollpunkter: keepTicks(p.kontrollpunkter, old.kontrollpunkter), uppdaterad: new Date().toISOString() };
+        ok = (await write({ kind: "update", table: "dash_instruktioner", id: old.id, patch },
+          () => Object.assign(old, patch), false)) && ok;
+        savedIds.push(old.id);
+        continue;
+      }
+      const row = { id: newId(), nummer: p.nummer, titel: p.titel, text: p.text, status: "ny",
+        kontrollpunkter: p.kontrollpunkter, rapport: "", skapad_av: me || "okänd" };
+      inserts.push(row);
+      savedIds.push(row.id);
+    }
+    if (inserts.length) {
+      ok = (await write({ kind: "insert", table: "dash_instruktioner", row: inserts },
+        () => { inserts.forEach((r) => instr.items.push(normInstr(Object.assign({ skapad: new Date().toISOString() }, r)))); },
+        false)) && ok;
+    }
+    btn.disabled = false;
+    if (!ok) {
+      const m = $("in-read-msg");
+      m.dataset.kind = "error";
+      m.textContent = "Allt sparades inte. " + (instr.missing
+        ? "Tabellerna finns inte i databasen än." : "Felet står överst i fliken; texten ligger kvar i fältet.");
+      return;
+    }
+    instr.justSaved = new Set(savedIds);
+    instr.preview = null;
+    instr.filter = "all";
+    instr.search = "";
+    $("in-search").value = "";
+    instr.openId = null;
+    $("in-paste").value = "";
+    const m = $("in-read-msg");
+    m.dataset.kind = "ok";
+    m.textContent = savedIds.length
+      ? "Sparade " + savedIds.length + (savedIds.length === 1 ? " Del." : " Delar.") + (outbox.length ? " (väntar på uppkoppling)" : "")
+      : "Inget sparades — alla hoppades över.";
+    instr.sig = "";
+    await loadInstr();
+    renderInstr();
+    renderTabs();
+    $("in-list").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  /* ---- the list ---- */
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch (_) { /* fall back below */ }
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed"; ta.style.top = "0"; ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (_) {}
+    ta.remove();
+    return ok;
+  }
+
+  const setStatus = (d, status) => write(
+    { kind: "update", table: "dash_instruktioner", id: d.id, patch: { status, uppdaterad: new Date().toISOString() } },
+    () => { d.status = status; renderInstr(); renderTabs(); });
+
+  $("p-instr").addEventListener("click", async (e) => {
+    const f = e.target.closest("[data-in-filter]");
+    if (f) { instr.filter = f.dataset.inFilter; renderInstr(); return; }
+
+    const o = e.target.closest("[data-in-open]");
+    if (o) {
+      const id = o.dataset.inOpen;
+      instr.openId = instr.openId === id ? null : id;
+      if (!instr.editing || instr.editing.id !== instr.openId) instr.editing = null;
+      renderInstr();
+      return;
+    }
+
+    const byId = (id) => instr.items.find((x) => x.id === id);
+
+    const cp = e.target.closest("[data-in-copy]");
+    if (cp) {
+      const d = byId(cp.dataset.inCopy);
+      if (!d) return;
+      if (!(await copyText(d.text))) { showError("Kunde inte kopiera. Markera texten under Hela instruktionen och kopiera själv."); return; }
+      instr.copied = d.id;
+      instr.offerSent.add(d.id);
+      renderInstr();
+      window.setTimeout(() => { if (instr.copied === d.id) { instr.copied = null; renderInstr(); } }, 2000);
+      return;
+    }
+
+    const st = e.target.closest("[data-in-status]");
+    if (st) {
+      const [id, status] = st.dataset.inStatus.split(":");
+      const d = byId(id);
+      if (d && d.status !== status) await setStatus(d, status);
+      return;
+    }
+
+    const ed = e.target.closest("[data-in-edit]");
+    if (ed) {
+      const d = byId(ed.dataset.inEdit);
+      if (d) { instr.editing = { id: d.id, nummer: d.nummer, titel: d.titel, text: d.text }; renderInstr(); }
+      return;
+    }
+    if (e.target.closest("[data-in-cancel]")) { instr.editing = null; renderInstr(); return; }
+
+    const sv = e.target.closest("[data-in-save]");
+    if (sv && instr.editing) {
+      const d = byId(sv.dataset.inSave);
+      const ed2 = instr.editing;
+      if (!d || !ed2.nummer.trim()) { showError("Numret får inte vara tomt."); return; }
+      const lines = ed2.text.replace(/\r\n?/g, "\n").split("\n");
+      const patch = { nummer: ed2.nummer.trim(), titel: ed2.titel.trim(), text: ed2.text,
+        kontrollpunkter: keepTicks(parseChecks(lines), d.kontrollpunkter), uppdaterad: new Date().toISOString() };
+      instr.editing = null;
+      await write({ kind: "update", table: "dash_instruktioner", id: d.id, patch },
+        () => { Object.assign(d, patch); renderInstr(); });
+      return;
+    }
+
+    const dl = e.target.closest("[data-in-del]");
+    if (dl) {
+      const d = byId(dl.dataset.inDel);
+      if (!d || !window.confirm("Ta bort Del " + d.nummer + "? Det går inte att ångra.")) return;
+      if (instr.openId === d.id) instr.openId = null;
+      await write({ kind: "delete", table: "dash_instruktioner", id: d.id },
+        () => { instr.items = instr.items.filter((x) => x.id !== d.id); renderInstr(); renderTabs(); });
+      return;
+    }
+
+    const bd = e.target.closest("[data-bs-del]");
+    if (bd) {
+      const b = instr.beslut.find((x) => x.id === bd.dataset.bsDel);
+      if (!b || !window.confirm("Ta bort beslutet? Det går inte att ångra.")) return;
+      await write({ kind: "delete", table: "dash_beslut", id: b.id },
+        () => { instr.beslut = instr.beslut.filter((x) => x.id !== b.id); renderBeslut(); });
+    }
+  });
+
+  $("p-instr").addEventListener("change", async (e) => {
+    const ck = e.target.closest("[data-in-check]");
+    if (ck) {
+      const [id, i] = ck.dataset.inCheck.split(":");
+      const d = instr.items.find((x) => x.id === id);
+      const p = d && d.kontrollpunkter[+i];
+      if (!p) return;
+      const klar = ck.checked;
+      await write({ kind: "rpc", fn: "dash_instr_kryssa", args: { p_id: id, p_index: +i, p_klar: klar } },
+        () => { p.klar = klar; renderInstr(); });
+      return;
+    }
+    const rp = e.target.closest("[data-in-rapport]");
+    if (rp) {
+      const d = instr.items.find((x) => x.id === rp.dataset.inRapport);
+      if (!d || d.rapport === rp.value) return;
+      const rapport = rp.value;
+      await write({ kind: "update", table: "dash_instruktioner", id: d.id,
+        patch: { rapport, uppdaterad: new Date().toISOString() } }, () => { d.rapport = rapport; });
+    }
+  });
+
+  $("p-instr").addEventListener("input", (e) => {
+    const ef = e.target.closest("[data-in-edit-field]");
+    if (ef && instr.editing) { instr.editing[ef.dataset.inEditField] = ef.value; return; }
+    if (e.target.id === "in-search") { instr.search = e.target.value; renderInstr(); return; }
+    if (e.target.id === "bs-search") { instr.bsSearch = e.target.value; renderBeslut(); }
+  });
+
+  /* ---- export ---- */
+  $("in-export").addEventListener("click", () => {
+    const rows = instr.items.slice().sort((a, b) => byNumDesc(b, a));
+    if (!rows.length) return;
+    const md = rows.map((d) => {
+      const lines = d.text.split("\n");
+      const head = lines.length && DEL_HEAD.test(lines[0]) ? lines.shift() : "# Del " + d.nummer + ": " + d.titel;
+      return [head, "<!-- status: " + IN_STATUS_LABEL[d.status] + " -->"].concat(lines).join("\n");
+    }).join("\n\n---\n\n") + "\n";
+    const url = URL.createObjectURL(new Blob([md], { type: "text/markdown;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "instruktioner-" + localDate() + ".md";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  /* ---- beslut ---- */
+  $("bs-add").addEventListener("click", async () => {
+    const text = $("bs-text").value.trim();
+    const m = $("bs-msg");
+    if (!text) { m.dataset.kind = "error"; m.textContent = "Skriv vad ni har bestämt först."; return; }
+    const del = $("bs-del").value.trim().replace(/^del\s+/i, "");
+    const row = { id: newId(), text, datum: localDate(), kopplad_del: del || null, skapad_av: me || "okänd" };
+    const ok = await write({ kind: "insert", table: "dash_beslut", row },
+      () => { instr.beslut.push(Object.assign({ skapad: new Date().toISOString() }, row)); renderBeslut(); });
+    if (!ok) {
+      m.dataset.kind = "error";
+      m.textContent = "Beslutet sparades inte. " + (instr.missing ? "Tabellerna finns inte i databasen än." : "Felet står överst i fliken.");
+      return;
+    }
+    $("bs-text").value = "";
+    $("bs-del").value = "";
+    m.dataset.kind = "ok";
+    m.textContent = outbox.length ? "Beslutet väntar på uppkoppling." : "";
+  });
+
   /* ---------- the way in ----------
      Played once the code is accepted and before the dashboard is revealed, so
      it covers the moment the first rows are being fetched rather than adding a
@@ -2311,6 +3129,8 @@
     setLink("pending", "Hämtar");
     const shown = playIntro();
     await loadAll();
+    await loadInstr();
+    flushOutbox();
     subscribe();
     await shown;
     return true;
@@ -2333,6 +3153,7 @@
   /* ---------- start ---------- */
   $("pu-date").value = today();
   renderAll();
+  renderInstr();
 
   (async () => {
     let saved = "";
